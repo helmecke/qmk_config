@@ -25,6 +25,10 @@ ifeq ($(strip $(KEY_OVERRIDE_ENABLE)), yes)
 	SRC += key_overrides.c
 endif
 
+ifeq ($(strip $(CAPS_WORD_ENABLE)), yes)
+	SRC += caps_word.c
+endif
+
 CUSTOM_REPEAT_ENABLE ?= yes
 ifeq ($(strip $(CUSTOM_REPEAT_ENABLE)), yes)
 	OPT_DEFS += -DCUSTOM_REPEAT_ENABLE

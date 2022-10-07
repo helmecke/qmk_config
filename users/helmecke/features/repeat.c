@@ -8,7 +8,7 @@ uint8_t last_modifier = 0;
 uint16_t pressed_keycode = KC_NO;
 
 void process_repeat_key(uint16_t keycode, const keyrecord_t *record) {
-  if (keycode != REPEAT && keycode != TH_REP) {
+  if (keycode != REPEAT) {
     // Early return when holding down a pure layer key
     // to retain modifiers
     switch (keycode) {

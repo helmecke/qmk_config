@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 enum layers {
-    _COLEMAK,
+    _QWERTY,
     _NSYM,
     _UMLAUT,
     _NAV,
@@ -27,5 +27,4 @@ enum layers {
     _FUN,
     _MOUSE,
     _ADJUST,
-    _QWERTY,
 };

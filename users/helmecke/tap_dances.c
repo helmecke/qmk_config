@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "tap_dances.h"
 #include "layers.h"
 #include "features/features.h"
+#include "keymap_german.h"
 
 // To activate SINGLE_HOLD, you will need to hold for 200ms first.
 // This tap dance favors keys that are used frequently in typing like 'f'
@@ -118,14 +119,24 @@ void lead_finished(qk_tap_dance_state_t* state, void* user_data) {
 
 void lead_reset(qk_tap_dance_state_t* state, void* user_data) {
     switch (lead_state.state) {
-        case TD_SINGLE_HOLD: layer_off(_FUN); break;
+        case TD_DOUBLE_TAP: register_code(KC_MINS); register_code(KC_MINS); break;
         default: break;
     }
     lead_state.state = TD_NONE;
 }
 
+void lead(qk_tap_dance_state_t *state, void *user_data) {
+    if (state->count >=2) {
+        start_leading();
+        reset_tap_dance(state);
+    } else {
+        tap_code(DE_COMM);
+        reset_tap_dance(state);
+    }
+};
+
 qk_tap_dance_action_t tap_dance_actions[] = {
     [TD_RESET] = ACTION_TAP_DANCE_FN(safe_reset),
     [TD_MINS] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, mins_finished, mins_reset),
-    [TD_LEAD] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, lead_finished, lead_reset),
+    [TD_LEAD] = ACTION_TAP_DANCE_FN(lead),
 };

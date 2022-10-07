@@ -19,3 +19,6 @@
 #include QMK_KEYBOARD_H
 
 // Leader functions
+#ifdef CAPS_WORD_ENABLE
+void *leader_case_word(uint16_t keycode);
+#endif

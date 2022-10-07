@@ -16,7 +16,7 @@
 
 #include "leaderfuncs.h"
 #include "keycodes.h"
-#include "keymap_german.h"
+#include "helmecke.h"
 
 void *leader_start_func(uint16_t keycode) {
     switch (keycode) {
@@ -37,11 +37,10 @@ void *leader_start_func(uint16_t keycode) {
             break;
 #ifdef CAPS_WORD_ENABLE
         case KC_C:
-            caps_word_toggle();
-            break;
+            return leader_case_word;
 #endif
-        case KC_LSHIFT:
-        case KC_RSHIFT:
+        case KC_LSFT:
+        case KC_RSFT:
             // escape shift modifier
             return leader_start_func;
         default:
@@ -49,3 +48,22 @@ void *leader_start_func(uint16_t keycode) {
     }
     return NULL;
 }
+
+#ifdef CAPS_WORD_ENABLE
+void *leader_case_word(uint16_t keycode) {
+    switch (keycode) {
+        case KC_C:
+            toggle_caps_word_mode(CAPS_WORD_MODE_DEFAULT);
+            break;
+        case KC_U:
+            toggle_caps_word_mode(CWMODE_SNAKE_CASE);
+            break;
+        case KC_S:
+            toggle_caps_word_mode(CWMODE_SLASH_CASE);
+            break;
+        default:
+            return NULL;
+    }
+    return NULL;
+}
+#endif

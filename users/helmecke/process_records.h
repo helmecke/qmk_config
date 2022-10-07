@@ -24,6 +24,9 @@ enum custom_keycodes {
     U_QUOT = SAFE_RANGE,
     U_SCLN,
     U_SLSH,
+    U_LBRC,
+    U_RBRC,
+    U_PLUS,
     LEADER,
     REPEAT,
 };

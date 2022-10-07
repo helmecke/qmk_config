@@ -34,11 +34,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     bool return_state = true;
     uint8_t saved_mods = get_mods();
 
-#ifdef CASEMODES_ENABLE
-    if (!process_case_modes(keycode, record)) {
-        return false;
-    }
-#endif
 #ifdef CUSTOM_LEADER_ENABLE
     if (!process_leader(keycode, record)) {
         return false;
@@ -48,9 +43,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     process_repeat_key(keycode, record);
 #endif /* CUSTOM_REPEAT_ENABLE */
     switch (keycode) {
-        case REPEAT:
-        case TH_REP:
-            return false;
         // US like KC_QUOT with mod-tap
         case U_QUOT:
             if (record->event.pressed) {
@@ -77,8 +69,20 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case U_SCLN:
             if (record->event.pressed) {
                 if (saved_mods & (MOD_BIT(KC_LSFT) | MOD_BIT(KC_RSFT))) {
-                    unregister_mods(MOD_LSFT);
-                    unregister_mods(MOD_RSFT);
+                    del_mods(MOD_MASK_SHIFT);
+                    tap_code16(DE_COLN);
+                    set_mods(saved_mods);
+                } else {
+                    tap_code16(DE_SCLN);
+                }
+                return_state = false;
+                break;
+            }
+            break;
+        case HB_SCLN:
+            if (record->tap.count && record->event.pressed) {
+                if (saved_mods & (MOD_BIT(KC_LSFT) | MOD_BIT(KC_RSFT))) {
+                    del_mods(MOD_MASK_SHIFT);
                     tap_code16(DE_COLN);
                     set_mods(saved_mods);
                 } else {
@@ -91,12 +95,50 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case U_SLSH:
             if (record->event.pressed) {
                 if (saved_mods & (MOD_BIT(KC_LSFT) | MOD_BIT(KC_RSFT))) {
-                    unregister_mods(MOD_LSFT);
-                    unregister_mods(MOD_RSFT);
-                    tap_code16(DE_QUES);
+                    del_mods(MOD_MASK_SHIFT);
+                    tap_code16(DE_MINS);
                     set_mods(saved_mods);
                 } else {
                     tap_code16(DE_SLSH);
+                }
+                return_state = false;
+                break;
+            }
+            break;
+        case U_LBRC:
+            if (record->event.pressed) {
+                if (saved_mods & (MOD_BIT(KC_LSFT) | MOD_BIT(KC_RSFT))) {
+                    del_mods(MOD_MASK_SHIFT);
+                    tap_code16(DE_LCBR);
+                    set_mods(saved_mods);
+                } else {
+                    tap_code16(DE_LBRC);
+                }
+                return_state = false;
+                break;
+            }
+            break;
+        case U_RBRC:
+            if (record->event.pressed) {
+                if (saved_mods & (MOD_BIT(KC_LSFT) | MOD_BIT(KC_RSFT))) {
+                    del_mods(MOD_MASK_SHIFT);
+                    tap_code16(DE_RCBR);
+                    set_mods(saved_mods);
+                } else {
+                    tap_code16(DE_RBRC);
+                }
+                return_state = false;
+                break;
+            }
+            break;
+        case U_PLUS:
+            if (record->event.pressed) {
+                if (saved_mods & (MOD_BIT(KC_LSFT) | MOD_BIT(KC_RSFT))) {
+                    del_mods(MOD_MASK_SHIFT);
+                    tap_code16(DE_EQL);
+                    set_mods(saved_mods);
+                } else {
+                    tap_code16(DE_PLUS);
                 }
                 return_state = false;
                 break;
