@@ -51,11 +51,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     #define U_DOT TD(TD_DOT)
     #define U_MINS TD(TD_MINS)
     #define U_LEAD TD(TD_LEAD)
+    #define U_DBG QK_DEBUG_TOGGLE
 #else
     #define U_RST QK_BOOT
     #define U_DOT _______
     #define U_MINS _______
     #define U_LEAD DE_COMM
+    #define U_DBG QK_DEBUG_TOGGLE
 #endif
 
 #define OS_CTL OSM(MOD_LCTL)
