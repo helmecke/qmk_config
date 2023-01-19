@@ -98,6 +98,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define ___L_TOP__MOUSE____________________________ KC_WH_L, KC_WH_U, KC_MS_U, KC_WH_D, KC_WH_R
 #define ___L_HOME_MOUSE____________________________ _______, KC_MS_L, KC_MS_D, KC_MS_R, _______
 #define ___L_BOT__MOUSE____________________________ _______, KC_BTN2, KC_BTN3, KC_BTN1, _______
+#define ___L_FUNROW________________________________ KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5
+#define ___R_FUNROW________________________________ KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10
 
 // Layout wrappers
 #define LAYOUT_wrapper(...) LAYOUT(__VA_ARGS__)
