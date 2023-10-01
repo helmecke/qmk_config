@@ -23,9 +23,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Configure the global combo term (default: 50ms)
 #define COMBO_TERM 60
 
-// Prevent normal rollover on alphas from accidentally triggering mods.
-#define IGNORE_MOD_TAP_INTERRUPT
-
 // Mouse key speed and acceleration.
 // Delay between pressing a movement key and cursor movement (default: 10)
 #define MOUSEKEY_DELAY 5

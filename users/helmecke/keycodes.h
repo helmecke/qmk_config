@@ -44,19 +44,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Right-thumb
 #define TH_ENT LT(_MOUSE, KC_ENT)
 #define TH_SPC LT(_NUM, KC_SPC)
-#define FUN_TAB LT(_FUN, KC_TAB)
+#define TH_LEAD LT(_FUN, LEADER)
 
 #ifdef TAP_DANCE_ENABLE
     #define U_RST TD(TD_RESET)
     #define U_DOT TD(TD_DOT)
     #define U_MINS TD(TD_MINS)
-    #define U_LEAD TD(TD_LEAD)
     #define U_DBG QK_DEBUG_TOGGLE
 #else
-    #define U_RST QK_BOOT
+    #define U_RST QK_BOOTLOADER
     #define U_DOT _______
     #define U_MINS _______
-    #define U_LEAD DE_COMM
     #define U_DBG QK_DEBUG_TOGGLE
 #endif
 
@@ -76,7 +74,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // #define _________________________
 #define ___L_THUMB_QWERTY________ TH_ESC, TH_BSPC, TH_TAB
-#define ___R_THUMB_QWERTY________ TH_ENT, TH_SPC,  FUN_TAB
+#define ___R_THUMB_QWERTY________ TH_ENT, TH_SPC,  TH_LEAD
 // #define ___________________________________________
 #define ___L_TOP__SYMBOL___________________________ DE_GRV,  DE_LABK, DE_RABK, DE_AT,   DE_PERC
 #define ___L_HOME_SYMBOL___________________________ DE_EXLM, DE_MINS, DE_PLUS, DE_EQL,  DE_HASH

@@ -95,6 +95,7 @@ const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][2] = {
     [_QWERTY] = { { KC_VOLD, KC_VOLU }, { KC_MPRV, KC_MNXT } },
     [_NAV] = { { KC_VOLD, KC_VOLU }, { KC_MPRV, KC_MNXT } },
     [_NUM] = { { KC_VOLD, KC_VOLU }, { KC_MPRV, KC_MNXT } },
+    [_MOUSE] = { { KC_VOLD, KC_VOLU }, { KC_MPRV, KC_MNXT } },
     [_SYM] = { { KC_VOLD, KC_VOLU }, { KC_MPRV, KC_MNXT } },
     [_FUN] = { { KC_VOLD, KC_VOLU }, { KC_MPRV, KC_MNXT } },
     [_ADJUST] = { { KC_VOLD, KC_VOLU }, { KC_MPRV, KC_MNXT } },

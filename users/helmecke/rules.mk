@@ -3,7 +3,7 @@ TAP_DANCE_ENABLE = yes
 MOUSEKEY_ENABLE = yes
 COMBO_ENABLE = yes
 KEY_OVERRIDE_ENABLE = yes
-MOUSEKEY_ENABLE = yes  
+MOUSEKEY_ENABLE = yes
 UNICODE_ENABLE = yes
 CUSTOM_LEADER_ENABLE = yes
 CUSTOM_REPEAT_ENABLE = yes
@@ -35,5 +35,5 @@ ifeq ($(strip $(CUSTOM_REPEAT_ENABLE)), yes)
 	SRC += features/repeat.c
 endif
 
-SRC += helmecke.c
+INTROSPECTION_KEYMAP_C = helmecke.c
 SRC += process_records.c
