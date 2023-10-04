@@ -23,3 +23,6 @@
 > https://github.com/qmk/qmk_firmware/blob/master/users/drashna/split/transport_sync.c#L99
 > And:
 > https://github.com/qmk/qmk_firmware/blob/master/users/drashna/split/transport_sync.c#L123
+
+OS_DETECTION_DEBUG_ENABLE = yes
+CONSOLE_ENABLE = yes

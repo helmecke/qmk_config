@@ -1,20 +1,3 @@
-/*
-Copyright 2022 Jakob Helmecke @helmecke
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
 #pragma once
 
 // Configure the global tapping term (default: 200ms)
@@ -36,3 +19,5 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define MOUSEKEY_WHEEL_DELAY 5
 // Forces the keyboard to wait for a USB connection to be established before it starts up
 // #define WAIT_FOR_USB
+#define LEADER_PER_KEY_TIMING
+#define LEADER_TIMEOUT 250

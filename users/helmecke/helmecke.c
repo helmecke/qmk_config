@@ -1,162 +1,109 @@
-/*
-Copyright 2022 Jakob Helmecke @helmecke
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
 #include "helmecke.h"
 
-enum combos {
-    WE_ESC,
-    XC_TAB,
-    IO_BSPC,
-    LEADER_COMBO,
-    COMBO_LENGTH
-};
-// remove the COMBO_COUNT define and use this instead!
-uint16_t COMBO_LEN = COMBO_LENGTH;
+// Matrix scan
 
-const uint16_t PROGMEM esc_combo[] = {DE_W, DE_E, COMBO_END};
-const uint16_t PROGMEM tab_combo[] = {HB_X, DE_C, COMBO_END};
-const uint16_t PROGMEM bspc_combo[] = {DE_I, DE_O, COMBO_END};
-const uint16_t PROGMEM leader_combo[] = {DE_COMM, HB_DOT, COMBO_END};
+__attribute__((weak)) void matrix_scan_keymap(void) {}
 
-combo_t key_combos[] = {
-    [WE_ESC] = COMBO(esc_combo, KC_ESC),
-    [XC_TAB] = COMBO(tab_combo, KC_TAB),
-    [IO_BSPC] = COMBO(bspc_combo, KC_BSPC),
-    [LEADER_COMBO] = COMBO(leader_combo, LEADER),
-};
+void matrix_scan_user(void) {
+    matrix_scan_keymap();
+}
 
-// const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-//     [_COLEMAK] = LAYOUT_helmecke(
-//     //┌────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┐
-//        DE_Q,    DE_W,    DE_F,    DE_P,    DE_G,                               DE_J,    DE_L,    DE_U,    DE_Y,    U_SCLN,
-//     //├────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┤
-//        HB_A,    HB_R,    HC_S,    HB_T,    DE_D,                               DE_H,    HB_N,    HB_E,    HB_I,    HB_O,
-//     //├────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┤
-//        DE_Z,    HB_X,    DE_C,    DE_V,    DE_B,                               DE_K,    DE_M,    DE_COMM, HB_DOT,  OS_NSYM,
-//     //└────────┴────────┴───┬────┴───┬────┴───┬────┴───┐                 ┌────┴───┬────┴───┬────┴───┬────┴────────┴────────┘
-//                              TH_ESC,  TH_BSPC, TH_TAB,                    TH_ENT,  TH_SPC,  U_LEAD
-//                          // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
-//     ),
-//
-//     [_NSYM] = LAYOUT_helmecke(
-//     //┌────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┐
-//        DE_1,    DE_2,    DE_3,    DE_4,    DE_5,                               DE_6,    DE_7,    DE_8,    DE_9,    DE_0,
-//     //├────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┤
-//        DE_AT,   DE_HASH, DE_AMPR, DE_ASTR, DE_MINS,                            DE_PLUS, DE_EQL,  DE_LPRN, DE_RPRN, DE_PERC,
-//     //├────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┤
-//        DE_UNDS, DE_EURO, DE_DQUO, DE_QUOT, DE_COLN,                            DE_SCLN, DE_SLSH, DE_QUES, DE_EXLM, _______,
-//     //└────────┴────────┴───┬────┴───┬────┴───┬────┴───┐                 ┌────┴───┬────┴───┬────┴───┬────┴────────┴────────┘
-//                              _______, _______, _______,                   _______, _______, _______
-//                          // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
-//     ),
-//
-//     [_NAV] = LAYOUT_helmecke(
-//     //┌────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┐
-//        _______, _______, _______, _______, _______,                            KC_HOME, KC_PGDN, KC_PGUP, KC_END,  KC_VOLU,
-//     //├────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┤
-//        KC_LGUI, KC_LALT, KC_LSFT, KC_LCTL, _______,                            KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, KC_MUTE,
-//     //├────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┤
-//        SC_UNDO, SC_CUT,  SC_COPY, SC_PSTE, SC_SPST,                            KC_MPLY, KC_MNXT, KC_MPRV, KC_MSTP, KC_VOLD,
-//     //└────────┴────────┴───┬────┴───┬────┴───┬────┴───┐                 ┌────┴───┬────┴───┬────┴───┬────┴────────┴────────┘
-//                              U_RST,   _______, _______,                   _______, _______, _______
-//                          // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
-//     ),
-//
-//     [_NUM] = LAYOUT_helmecke(
-//     //┌────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┐
-//        DE_1,    DE_2,    DE_3,    DE_4,    DE_5,                               DE_6,    DE_7,    DE_8,    DE_9,    DE_0,
-//     //├────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┤
-//        KC_LGUI, KC_LALT, KC_LSFT, KC_LCTL, _______,                            _______, KC_RCTL, KC_RSFT, KC_LALT, KC_RGUI,
-//     //├────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┤
-//        _______, _______, _______, _______, _______,                            _______, _______, DE_COMM, DE_DOT,  _______,
-//     //└────────┴────────┴───┬────┴───┬────┴───┬────┴───┐                 ┌────┴───┬────┴───┬────┴───┬────┴────────┴────────┘
-//                              _______, _______, _______,                   _______, _______, U_RST
-//                          // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
-//     ),
-//
-//     // [_SYM] = LAYOUT_helmecke(
-//     // //┌────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┐
-//     //    DE_GRV,  DE_LABK, DE_RABK, DE_AT,   DE_DEG,                             DE_AMPR, DE_CIRC, DE_LCBR, DE_RCBR, DE_PERC,
-//     // //├────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┤
-//     //    DE_EXLM, DE_MINS, DE_PLUS, DE_EQL,  DE_HASH,                            DE_PIPE, DE_COLN, DE_LPRN, DE_RPRN, DE_EURO,
-//     // //├────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┤
-//     //    DE_QUES, DE_SLSH, DE_ASTR, DE_BSLS, DE_SECT,                            DE_TILD, DE_DLR,  DE_LBRC, DE_RBRC, DE_UNDS,
-//     // //└────────┴────────┴───┬────┴───┬────┴───┬────┴───┐                 ┌────┴───┬────┴───┬────┴───┬────┴────────┴────────┘
-//     //                          U_RST,   _______, _______,                   _______, _______, _______
-//     //                      // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
-//     // ),
-//
-//     [_SYM] = LAYOUT_helmecke(
-//     //┌────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┐
-//        DE_GRV,  DE_LABK, DE_RABK, DE_AT,   DE_PERC,                            DE_AMPR, DE_CIRC, DE_LBRC, DE_RBRC, DE_DEG,
-//     //├────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┤
-//        DE_EXLM, DE_MINS, DE_PLUS, DE_EQL,  DE_HASH,                            DE_PIPE, DE_EURO, DE_LPRN, DE_RPRN, DE_COLN,
-//     //├────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┤
-//        DE_QUES, DE_SLSH, DE_ASTR, DE_BSLS, DE_SECT,                            DE_TILD, DE_DLR,  DE_LCBR, DE_RCBR, DE_UNDS,
-//     //└────────┴────────┴───┬────┴───┬────┴───┬────┴───┐                 ┌────┴───┬────┴───┬────┴───┬────┴────────┴────────┘
-//                              U_RST,   _______, _______,                   _______, KC_ENT,  _______
-//                          // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
-//     ),
-//
-//     [_FUN] = LAYOUT_helmecke(
-//     //┌────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┐
-//        KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,                              KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,
-//     //├────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┤
-//        KC_F11,  _______, _______, _______, _______,                            _______, _______, _______, _______, KC_F12,
-//     //├────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┤
-//        _______, _______, _______, _______, KC_INS,                             COLEMAK, QWERTY,  _______, _______, _______,
-//     //└────────┴────────┴───┬────┴───┬────┴───┬────┴───┐                 ┌────┴───┬────┴───┬────┴───┬────┴────────┴────────┘
-//                              _______, _______, _______,                   _______, _______, _______
-//                          // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
-//     ),
-//
-//     [_MOUSE] = LAYOUT_helmecke(
-//     //┌────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┐
-//        KC_WH_L, KC_WH_U, KC_MS_U, KC_WH_D, KC_WH_R,                            SC_REDO, _______, _______, _______, U_DBG,
-//     //├────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┤
-//        _______, KC_MS_L, KC_MS_D, KC_MS_R, _______,                            _______, KC_RCTL, KC_RSFT, KC_LALT, KC_RGUI,
-//     //├────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┤
-//        SC_UNDO, SC_CUT,  SC_COPY, SC_PSTE, SC_SPST,                            _______, _______, _______, _______, _______,
-//     //└────────┴────────┴───┬────┴───┬────┴───┬────┴───┐                 ┌────┴───┬────┴───┬────┴───┬────┴────────┴────────┘
-//                              _______, _______, _______,                   KC_BTN2, KC_BTN1, KC_BTN3
-//                          // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
-//     ),
-//
-//     [_QWERTY] = LAYOUT_helmecke(
-//     //┌────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┐
-//        DE_Q,    DE_W,    DE_E,    DE_R,    DE_T,                               DE_Y,    DE_U,    DE_I,    DE_O,    DE_P,
-//     //├────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┤
-//        HB_A,    HB_S,    HB_D,    HB_F,    DE_G,                               DE_H,    HB_J,    HB_K,    HB_L,    HB_QUOT,
-//     //├────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┤
-//        DE_Z,    HB_X,    DE_C,    DE_V,    DE_B,                               DE_N,    DE_M,    DE_COMM, HB_DOT,  DE_MINS,
-//     //└────────┴────────┴───┬────┴───┬────┴───┬────┴───┐                 ┌────┴───┬────┴───┬────┴───┬────┴────────┴────────┘
-//                              TH_ESC,  TH_BSPC, TH_TAB,                    TH_ENT,  TH_SPC,  U_LEAD
-//                          // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
-//     ),
-//
-//     // [EMPTY] = LAYOUT_helmecke(
-//     // //┌────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┐
-//     //    _______, _______, _______, _______, _______,                            _______, _______, _______, _______, _______,
-//     // //├────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┤
-//     //    _______, _______, _______, _______, _______,                            _______, _______, _______, _______, _______,
-//     // //├────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┤
-//     //    _______, _______, _______, _______, _______,                            _______, _______, _______, _______, _______,
-//     // //└────────┴────────┴───┬────┴───┬────┴───┬────┴───┐                 ┌────┴───┬────┴───┬────┴───┬────┴────────┴────────┘
-//     //                          _______, _______, _______,                   _______, _______, _______
-//     //                      // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
-//     // ),
-// };
+#ifdef OS_DETECTION_ENABLE
+os_variant_t os_type;
+
+uint32_t startup_exec(uint32_t trigger_time, void *cb_arg) {
+    if (is_keyboard_master()) {
+        os_type = detected_host_os();
+        if (os_type) {
+            bool is_mac                  = (os_type == OS_MACOS) || (os_type == OS_IOS);
+            keymap_config.swap_lctl_lgui = keymap_config.swap_rctl_rgui = is_mac;
+#    ifdef UNICODE_COMMON_ENABLE
+            uint8_t mode = is_mac ? UNICODE_MODE_MACOS : UNICODE_MODE_WINCOMPOSE;
+            if (mode != get_unicode_input_mode()) {
+                set_unicode_input_mode(mode);
+            }
+#    endif
+            switch (os_type) {
+                case OS_UNSURE:
+                    xprintf("unknown OS Detected\n");
+                    break;
+                case OS_LINUX:
+                    xprintf("Linux Detected\n");
+                    break;
+                case OS_WINDOWS:
+                    xprintf("Windows Detected\n");
+                    break;
+                case OS_MACOS:
+                    xprintf("MacOS Detected\n");
+                    break;
+                case OS_IOS:
+                    xprintf("iOS Detected\n");
+                    break;
+            }
+        }
+    }
+
+    return os_type ? 0 : 500;
+}
+#endif
+
+void keyboard_post_init_user(void) {
+#ifdef CONSOLE_ENABLE
+    debug_enable = true;
+    // debug_matrix=true;
+    // debug_keyboard=true;
+    // debug_mouse=true;
+
+#    ifdef OS_DETECTION_ENABLE
+    defer_exec(100, startup_exec, NULL);
+#    endif
+#endif /* ifdef CONSOLE_ENABLE */
+}
+
+// Process record
+
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+#ifdef KEYLOGGER_ENABLE
+    // clang-format off
+    uprintf("KL: kc: 0x%04X, col: %2u, row: %2u, pressed: %1d, time: %5u, int: %1d, count: %u, layer: %2u, mods: 0x%02X, os_mods: 0x%02X\n",
+        keycode,
+        record->event.key.col,
+        record->event.key.row,
+        record->event.pressed,
+        record->event.time,
+        record->tap.interrupted,
+        record->tap.count,
+        get_highest_layer(layer_state),
+        get_mods(),
+        get_oneshot_mods()
+    );
+    // clang-format on
+#endif
+
+#ifdef CUSTOM_LEADER_ENABLE
+    switch (process_leader(keycode, record)) {
+        case PROCESS_RECORD_RETURN_TRUE:
+            return true;
+        case PROCESS_RECORD_RETURN_FALSE:
+            return false;
+        default:
+            break;
+    }
+        // if (!process_leader(keycode, record)) {
+        //     return_state = false;
+        // }
+#endif
+
+#ifdef GERMAN_US_ENABLE
+    switch (process_german_us(keycode, record)) {
+        case PROCESS_RECORD_RETURN_TRUE:
+            return true;
+        case PROCESS_RECORD_RETURN_FALSE:
+            return false;
+        default:
+            break;
+    };
+#endif /* ifdef GERMAN_US_ENABLE */
+
+    return true;
+}
