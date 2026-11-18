@@ -23,3 +23,5 @@ typedef struct {
 } td_tap_t;
 
 td_state_t dance_state(tap_dance_state_t *state);
+
+void td_comm(tap_dance_state_t *state, void *user_data);

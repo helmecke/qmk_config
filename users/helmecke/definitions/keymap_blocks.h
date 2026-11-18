@@ -28,8 +28,8 @@
 #define ___R_TOP__QWERTY___________________________ DE_Y,    DE_U,    DE_I,    DE_O,    DE_P
 #define ___R_HOME_QWERTY___________________________ DE_H,    HB_J,    HB_K,    HB_L,    HB_QUOT
 #define ___R_BOT__QWERTY___________________________ DE_N,    DE_M,    TD_COMM, HB_DOT,  U_SLSH
-#define ___L_TOP__MOUSE____________________________ KC_WH_L, KC_WH_U, KC_MS_U, KC_WH_D, KC_WH_R
-#define ___L_HOME_MOUSE____________________________ _______, KC_MS_L, KC_MS_D, KC_MS_R, _______
-#define ___L_BOT__MOUSE____________________________ _______, KC_BTN2, KC_BTN3, KC_BTN1, _______
+#define ___L_TOP__MOUSE____________________________ MS_WHLL, MS_WHLU, MS_UP,   MS_WHLD, MS_WHLR
+#define ___L_HOME_MOUSE____________________________ _______, MS_LEFT, MS_DOWN, MS_RGHT, _______
+#define ___L_BOT__MOUSE____________________________ _______, MS_BTN2, MS_BTN3, MS_BTN1, _______
 #define ___L_FUNROW________________________________ KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5
 #define ___R_FUNROW________________________________ KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10

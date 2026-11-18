@@ -1,6 +1,7 @@
 #include QMK_KEYBOARD_H
 
 #include "helmecke.h"
+#include "definitions/keymap_tables.h"
 
 #define LAYOUT_wrapper(...) LAYOUT(__VA_ARGS__)
 
@@ -8,9 +9,9 @@
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     [_QWERTY] = LAYOUT_wrapper(
-      U_PLUS,  ___L_TOP__QWERTY___________________________,                                            ___R_TOP__QWERTY___________________________, DE_MINS,
+      DE_ADIA, ___L_TOP__QWERTY___________________________,                                            ___R_TOP__QWERTY___________________________, DE_UDIA,
       U_LBRC,  ___L_HOME_QWERTY___________________________,                                            ___R_HOME_QWERTY___________________________, U_RBRC,
-      _______, ___L_BOT__QWERTY___________________________, _______, _______,        _______, _______, ___R_BOT__QWERTY___________________________, U_OS,
+      U_SZ,    ___L_BOT__QWERTY___________________________, _______, _______,        _______, _______, ___R_BOT__QWERTY___________________________, DE_ODIA,
                              KC_MUTE, MO(_ADJUST), ___L_THUMB_QWERTY________,        ___R_THUMB_QWERTY________, MO(_ADJUST), KC_MPLY
     ),
 
@@ -51,8 +52,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     [_ADJUST] = LAYOUT_wrapper(
       _______, _______, _______, _______, _______, _______,                                            _______, _______, _______, _______,  _______, _______,
-      _______, _______, _______, _______, _______, _______,                                            RGB_TOG, RGB_SAI, RGB_HUI, RGB_VAI,  RGB_MOD, _______,
-      _______, U_DBG  , _______, _______, _______, U_PS   ,_______, _______,         _______, _______, _______, RGB_SAD, RGB_HUD, RGB_VAD, RGB_RMOD, _______,
+      _______, _______, _______, _______, _______, _______,                                            UG_TOGG, UG_SATU, UG_HUEU, UG_VALU,  UG_NEXT, _______,
+      _______, U_DBG  , _______, _______, _______, U_PS   ,_______, _______,         _______, _______, _______, UG_SATD, UG_HUED, UG_VALD, UG_PREV, _______,
                                  _______, _______, _______,_______, _______,         _______, _______, _______, _______, _______
     ),
 
@@ -83,6 +84,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // clang-format off
 const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][2] = {
     [_QWERTY] = { { KC_VOLD, KC_VOLU }, { KC_MPRV, KC_MNXT } },
+    // The layer enum keeps holes for the retired _NSYM and _UMLAUT layers; QMK
+    // requires the encoder map to cover every keymap layer, so mirror the
+    // reachable mappings instead of renumbering the layers.
+    [_NSYM] = { { KC_VOLD, KC_VOLU }, { KC_MPRV, KC_MNXT } },
+    [_UMLAUT] = { { KC_VOLD, KC_VOLU }, { KC_MPRV, KC_MNXT } },
     [_NAV] = { { KC_VOLD, KC_VOLU }, { KC_MPRV, KC_MNXT } },
     [_NUM] = { { KC_VOLD, KC_VOLU }, { KC_MPRV, KC_MNXT } },
     [_SYM] = { { KC_VOLD, KC_VOLU }, { KC_MPRV, KC_MNXT } },
@@ -121,85 +127,83 @@ static void render_linux_logo(void) {
     oled_write_P(qmk_logo, false);
 }
 
+static void render_unknown_logo(void) {
+    // Host OS detection is a USB fingerprint, so an unknown host is displayed
+    // as such instead of being reported as one of the known systems.
+    static const char PROGMEM qmk_logo[] = {'?', '\n', '?', 0};
+
+    oled_write_P(qmk_logo, false);
+}
+
 bool oled_task_user(void) {
-    if (is_keyboard_master()) {
-        // QMK Logo and version information
-        // clang-format off
-        // static const char PROGMEM qmk_logo[] = {
-        //     0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8a,0x8b,0x8c,0x8d,0x8e,0x8f,0x90,0x91,0x92,0x93,0x94,
-        //     0xa0,0xa1,0xa2,0xa3,0xa4,0xa5,0xa6,0xa7,0xa8,0xa9,0xaa,0xab,0xac,0xad,0xae,0xaf,0xb0,0xb1,0xb2,0xb3,0xb4,
-        //     0xc0,0xc1,0xc2,0xc3,0xc4,0xc5,0xc6,0xc7,0xc8,0xc9,0xca,0xcb,0xcc,0xcd,0xce,0xcf,0xd0,0xd1,0xd2,0xd3,0xd4,0};
-        // clang-format on
-
-        switch (detected_host_os()) {
-            case OS_UNSURE:
-                render_linux_logo();
-                break;
-            case OS_LINUX:
-                render_linux_logo();
-                break;
-            case OS_WINDOWS:
-                render_windows_logo();
-                break;
-            case OS_MACOS:
-                render_macos_logo();
-                break;
-            case OS_IOS:
-                render_macos_logo();
-                break;
-        }
-
-        // oled_write_P(qmk_logo, false);
-        oled_write_P(PSTR("\n\nKyria rev2.1\n\n"), false);
-
-        // Host Keyboard Layer Status
-        oled_write_P(PSTR("Layer: "), false);
-        switch (get_highest_layer(layer_state | default_layer_state)) {
-            case _QWERTY:
-                oled_write_P(PSTR("QWERTY\n"), false);
-                break;
-            case _NAV:
-                oled_write_P(PSTR("Navigation\n"), false);
-                break;
-            case _NUM:
-                oled_write_P(PSTR("Number\n"), false);
-                break;
-            case _SYM:
-                oled_write_P(PSTR("Symbol\n"), false);
-                break;
-            case _FUN:
-                oled_write_P(PSTR("Function\n"), false);
-                break;
-            case _MOUSE:
-                oled_write_P(PSTR("Mouse\n"), false);
-                break;
-            case _ADJUST:
-                oled_write_P(PSTR("Adjust\n"), false);
-                break;
-            default:
-                oled_write_P(PSTR("Undefined\n"), false);
-        }
-
-        // Write host Keyboard LED Status to OLEDs
-        led_t led_usb_state = host_keyboard_led_state();
-        oled_write_P(led_usb_state.num_lock ? PSTR("NUMLCK ") : PSTR("       "), false);
-        oled_write_P(led_usb_state.caps_lock ? PSTR("CAPLCK ") : PSTR("       "), false);
-        oled_write_P(led_usb_state.scroll_lock ? PSTR("SCRLCK ") : PSTR("       "), false);
-    } else {
-        // clang-format off
-        static const char PROGMEM kyria_logo[] = {
-            0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,128,128,192,224,240,112,120, 56, 60, 28, 30, 14, 14, 14,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 14, 14, 14, 30, 28, 60, 56,120,112,240,224,192,128,128,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-            0,  0,  0,  0,  0,  0,  0,192,224,240,124, 62, 31, 15,  7,  3,  1,128,192,224,240,120, 56, 60, 28, 30, 14, 14,  7,  7,135,231,127, 31,255,255, 31,127,231,135,  7,  7, 14, 14, 30, 28, 60, 56,120,240,224,192,128,  1,  3,  7, 15, 31, 62,124,240,224,192,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-            0,  0,  0,  0,240,252,255, 31,  7,  1,  0,  0,192,240,252,254,255,247,243,177,176, 48, 48, 48, 48, 48, 48, 48,120,254,135,  1,  0,  0,255,255,  0,  0,  1,135,254,120, 48, 48, 48, 48, 48, 48, 48,176,177,243,247,255,254,252,240,192,  0,  0,  1,  7, 31,255,252,240,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-            0,  0,  0,255,255,255,  0,  0,  0,  0,  0,254,255,255,  1,  1,  7, 30,120,225,129,131,131,134,134,140,140,152,152,177,183,254,248,224,255,255,224,248,254,183,177,152,152,140,140,134,134,131,131,129,225,120, 30,  7,  1,  1,255,255,254,  0,  0,  0,  0,  0,255,255,255,  0,  0,  0,  0,255,255,  0,  0,192,192, 48, 48,  0,  0,240,240,  0,  0,  0,  0,  0,  0,240,240,  0,  0,240,240,192,192, 48, 48, 48, 48,192,192,  0,  0, 48, 48,243,243,  0,  0,  0,  0,  0,  0, 48, 48, 48, 48, 48, 48,192,192,  0,  0,  0,  0,  0,
-            0,  0,  0,255,255,255,  0,  0,  0,  0,  0,127,255,255,128,128,224,120, 30,135,129,193,193, 97, 97, 49, 49, 25, 25,141,237,127, 31,  7,255,255,  7, 31,127,237,141, 25, 25, 49, 49, 97, 97,193,193,129,135, 30,120,224,128,128,255,255,127,  0,  0,  0,  0,  0,255,255,255,  0,  0,  0,  0, 63, 63,  3,  3, 12, 12, 48, 48,  0,  0,  0,  0, 51, 51, 51, 51, 51, 51, 15, 15,  0,  0, 63, 63,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 48, 48, 63, 63, 48, 48,  0,  0, 12, 12, 51, 51, 51, 51, 51, 51, 63, 63,  0,  0,  0,  0,  0,
-            0,  0,  0,  0, 15, 63,255,248,224,128,  0,  0,  3, 15, 63,127,255,239,207,141, 13, 12, 12, 12, 12, 12, 12, 12, 30,127,225,128,  0,  0,255,255,  0,  0,128,225,127, 30, 12, 12, 12, 12, 12, 12, 12, 13,141,207,239,255,127, 63, 15,  3,  0,  0,128,224,248,255, 63, 15,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-            0,  0,  0,  0,  0,  0,  0,  3,  7, 15, 62,124,248,240,224,192,128,  1,  3,  7, 15, 30, 28, 60, 56,120,112,112,224,224,225,231,254,248,255,255,248,254,231,225,224,224,112,112,120, 56, 60, 28, 30, 15,  7,  3,  1,128,192,224,240,248,124, 62, 15,  7,  3,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-            0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  3,  7, 15, 14, 30, 28, 60, 56,120,112,112,112,224,224,224,224,224,224,224,224,224,224,224,224,224,224,224,224,112,112,112,120, 56, 60, 28, 30, 14, 15,  7,  3,  1,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-        };
-        // clang-format on
-        oled_write_raw_P(kyria_logo, sizeof(kyria_logo));
+    // The status screen is rendered by whichever half owns a display. Only the
+    // left half has one, so this also shows layer and lock state when the right
+    // half is the USB half; those fields are synced with
+    // SPLIT_LAYER_STATE_ENABLE and SPLIT_LED_STATE_ENABLE.
+    switch (helmecke_os()) {
+        case OS_UNSURE:
+            render_unknown_logo();
+            break;
+        case OS_LINUX:
+            render_linux_logo();
+            break;
+        case OS_WINDOWS:
+            render_windows_logo();
+            break;
+        case OS_MACOS:
+            render_macos_logo();
+            break;
+        case OS_IOS:
+            render_macos_logo();
+            break;
     }
+
+    oled_write_P(PSTR("\n\nKyria rev2.1\n"), false);
+
+    // Caps Word state comes from the core feature. It is a host-facing state on
+    // the USB half; the peripheral has no copy, so the line stays blank there
+    // instead of showing a stale value. The line is kept when the feature is
+    // not compiled in so the layout below stays in place.
+#ifdef CAPS_WORD_ENABLE
+    oled_write_P((is_keyboard_master() && is_caps_word_on()) ? PSTR("CapsWord: on\n") : PSTR("\n"), false);
+#else
+    oled_write_P(PSTR("\n"), false);
+#endif // CAPS_WORD_ENABLE
+
+    // Host Keyboard Layer Status
+    oled_write_P(PSTR("Layer: "), false);
+    switch (get_highest_layer(layer_state | default_layer_state)) {
+        case _QWERTY:
+            oled_write_P(PSTR("QWERTY\n"), false);
+            break;
+        case _NAV:
+            oled_write_P(PSTR("Navigation\n"), false);
+            break;
+        case _NUM:
+            oled_write_P(PSTR("Number\n"), false);
+            break;
+        case _SYM:
+            oled_write_P(PSTR("Symbol\n"), false);
+            break;
+        case _FUN:
+            oled_write_P(PSTR("Function\n"), false);
+            break;
+        case _MOUSE:
+            oled_write_P(PSTR("Mouse\n"), false);
+            break;
+        case _ADJUST:
+            oled_write_P(PSTR("Adjust\n"), false);
+            break;
+        default:
+            oled_write_P(PSTR("Undefined\n"), false);
+    }
+
+    // Host Keyboard LED Status, synced to the peripheral half
+    led_t led_usb_state = host_keyboard_led_state();
+    oled_write_P(led_usb_state.num_lock ? PSTR("NUMLCK ") : PSTR("       "), false);
+    oled_write_P(led_usb_state.caps_lock ? PSTR("CAPLCK ") : PSTR("       "), false);
+    oled_write_P(led_usb_state.scroll_lock ? PSTR("SCRLCK ") : PSTR("       "), false);
+
     return false;
 }
 #endif

@@ -48,3 +48,10 @@ ifeq ($(strip $(GERMAN_US_ENABLE)), yes)
 	OPT_DEFS += -DGERMAN_US_ENABLE
 	SRC += features/german_us.c
 endif
+
+# Caps Word is enabled per keymap/keyboard. The German-aware policy callback is
+# only compiled when the core feature is on, so other boards neither gain Caps
+# Word nor depend on disabled core APIs.
+ifeq ($(strip $(CAPS_WORD_ENABLE)), yes)
+	SRC += features/caps_word_german.c
+endif

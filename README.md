@@ -1,28 +1,263 @@
 # qmk_config
 
-> Drashna — Today at 12:13 AM
-> but it's ... definitely a bit convoluted
-> Drashna — Today at 12:15 AM
-> basically: 
-> Disable SPLIT_OLED_ENABLE, this syncs the status, but is wrong.  It syncs it based on the on/off status, but it alwayr returns false if there is no oled.
-> so you have to manually track and check
-> but the best way to do that is to also... disable the oled timeout and handle that yourself
-> So, I track the timeout manually: 
-> https://github.com/qmk/qmk_firmware/blob/master/users/drashna/oled/oled_stuff.c#L107-L117, and the oled_timer_reset is also triggered by mouse movement (in the pointing_device_task_user function), which you may want to do too. 
-> 
-> From there, I set a boolean based on if it should be turned on or off: 
-> https://github.com/qmk/qmk_firmware/blob/master/users/drashna/oled/oled_stuff.c#L996-L998
-> This logic is set independent of if the oled is present or not. 
-> 
-> 
-> And then I use that boolean to turn the oled on or off:
-> https://github.com/qmk/qmk_firmware/blob/master/users/drashna/oled/oled_stuff.c#L933-L942
-> the trick is that I also use the custom data sync option to sync the boolean status to the slave side.  And since that sets the boolean that is already being checked....
-> https://docs.qmk.fm/#/feature_split_keyboard?id=custom-data-sync
-> you can see what I sync it, at: 
-> https://github.com/qmk/qmk_firmware/blob/master/users/drashna/split/transport_sync.c#L99
-> And:
-> https://github.com/qmk/qmk_firmware/blob/master/users/drashna/split/transport_sync.c#L123
+Personal QMK configuration for a Kyria v2.1 with an Adafruit KB2040 (RP2040)
+controller in each half. The Kyria keymap lives in
+`keyboards/splitkb/kyria/keymaps/helmecke/`, the shared userspace in
+`users/helmecke/`.
 
-OS_DETECTION_DEBUG_ENABLE = yes
-CONSOLE_ENABLE = yes
+The Iris keymap and the community layouts in this repository are not maintained
+here; see [Out of scope](#out-of-scope) below.
+
+## Build
+
+### Toolchain and checkout
+
+The firmware is built with upstream QMK, not with the symlink layout that the
+root `Makefile` assumes (that layout expects `../../qmk/qmk_firmware` and a
+`helmecke/qmk_config` directory and does not work on Windows). Instead, stage
+this repository into a QMK checkout:
+
+```bash
+git clone https://github.com/qmk/qmk_firmware.git
+cd qmk_firmware
+git checkout 8252b6309752f0be6882c387e15989ba51323d8f
+git submodule update --init --recursive lib/chibios lib/chibios-contrib lib/pico-sdk lib/googletest
+
+/path/to/qmk_config/tests/stage-into-qmk.sh "$PWD"
+```
+
+If the script is not executable on your platform, run it with `bash
+/path/to/qmk_config/tests/stage-into-qmk.sh "$PWD"`.
+
+`tests/stage-into-qmk.sh` copies `users/helmecke`, the Kyria keymap and the
+fixtures under `tests/` into the checkout. Nothing is symlinked and no QMK
+sources are modified.
+
+The recorded build used QMK master `8252b6309752f0be6882c387e15989ba51323d8f`
+(2026-11-16) and the container image `ghcr.io/qmk/qmk_cli:latest`, digest
+`sha256:b7d7fa8fb4432b569931de5ad59098cb788f440ed61a62c5126746b71aee0f4a`.
+
+### Commands
+
+The KB2040 needs `CONVERT_TO=kb2040`. Without it QMK would resolve
+`splitkb/kyria/rev2` to its `base` variant (Elite-C/AVR) and build the wrong
+target. The converter selects `MCU=RP2040`, `BOARD=QMK_PM2040` and
+`BOOTLOADER=rp2040`, with `SERIAL_DRIVER=vendor` and `WS2812_DRIVER=vendor`.
+
+Full-feature build (OLED, encoders, underglow, Cirque, Caps Word):
+
+```bash
+make splitkb/kyria/rev2:helmecke CONVERT_TO=kb2040 -j2
+```
+
+Console-disabled verification build (OS application must not depend on console
+logging):
+
+```bash
+make splitkb/kyria/rev2:helmecke CONVERT_TO=kb2040 CONSOLE_ENABLE=no -j2
+```
+
+In the QMK container on Windows, from the checkout:
+
+```bash
+docker run --rm \
+  -v "C:/path/to/qmk_firmware:/qmk_firmware" \
+  -w /qmk_firmware -e SKIP_GIT=yes \
+  ghcr.io/qmk/qmk_cli:latest \
+  make splitkb/kyria/rev2:helmecke CONVERT_TO=kb2040 -j2
+```
+
+The build writes:
+
+- `.build/splitkb_kyria_rev2_base_helmecke_kb2040.uf2` (deployment image)
+- `.build/splitkb_kyria_rev2_base_helmecke_kb2040.elf` (debug image)
+- `splitkb_kyria_rev2_base_helmecke_kb2040.uf2` in the checkout root
+
+### Flash
+
+Both halves run the same firmware: handedness comes from the matrix
+(`split.handedness.matrix_grid` in `keyboard.json`), not from EEPROM, so the
+same UF2 is copied to each half and the `uf2-split-left`/`uf2-split-right`
+variants are not needed.
+
+1. Enter the bootloader without the reset button: hold the left **backspace
+   thumb** key (or the right **space thumb** key) so the `_SYM`/`_NUM` layer
+   engages, then tap the thumb key to its right. Those positions map to `U_RST`
+   (`QK_BOOT`). Double-tapping the KB2040 reset button works too.
+2. Copy the UF2 to the `RPI-RP2` drive, or run
+   `make splitkb/kyria/rev2:helmecke:flash CONVERT_TO=kb2040`.
+3. Repeat for the other half.
+
+This image was flashed and exercised on the hardware; see the verification
+status below for what was and was not covered.
+
+## Hardware configuration
+
+Effective settings, as resolved by the recorded build:
+
+| Function | Setting | Source |
+| -------- | ------- | ------ |
+| Matrix and encoders | `rev2/base` matrix pins, one encoder per half, rotated on the right | `keyboards/splitkb/kyria/rev2/base/keyboard.json` |
+| Split serial | Pro Micro `D2` → KB2040 `GP1`, vendor (PIO) serial driver | `keyboard.json`, converter default |
+| I2C bus | `I2CD1` (RP2040 I2C1), SDA = `D1` → `GP2`, SCL = `D0` → `GP3` | `QMK_PM2040` board defaults, inherited |
+| OLED and Cirque | Share the I2C bus; no repo-level RP2040 I2C overrides | Kyria keymap config/rules, board defaults |
+| RGB underglow | `WS2812` on Pro Micro `D3` → `GP0`, vendor driver, 20 LEDs split 10/10 | `keyboard.json`, converter default |
+| OLED | 128x64 SSD1306, rotation 180°, status screen on the only display; no OLED on/off sync; layer and lock state synced to the peripheral half | `rev2/config.h`, keymap config, keymap code |
+| Cirque | 40 mm Pinnacle on I2C, right side, tap and secondary tap, gesture scroll, curved overlay | Kyria keymap `config.h`/`rules.mk` |
+| USB side | Either half may be USB; `SPLIT_USB_DETECT`, `SPLIT_USB_TIMEOUT 4000`, `NO_USB_STARTUP_CHECK` | Kyria keymap `config.h` |
+
+The Cirque reports locally when the right half is the USB half and forwards
+movement, buttons and scroll when the left half is central. Left-half USB
+operation is confirmed by typing and display checks; the Cirque itself could not
+be exercised in this session because its connector and ribbon cable are missing.
+
+### OLED
+
+Only the left half has a display. The left half renders the status screen (OS
+logo, board name, layer, lock state) regardless of which half is the USB half,
+so the screen is usable in both orientations. `SPLIT_OLED_ENABLE` is deliberately
+undone: it is generated from the Kyria `info.json` and forwards the USB half's
+on/off state, which is always "off" when that half has no display and therefore
+switched the left display off. Each half now drives its own display and timeout;
+activity on either half wakes it because the matrix state is synced.
+
+The `CapsWord: on` line appears only while the **left** half is the USB half.
+Caps Word state exists on the USB half alone; the peripheral shows a blank line
+rather than a stale value. Syncing it would need a custom split RPC transaction
+(not implemented). The OS logo uses the OS synchronized over the split
+transport when the left half is the peripheral, so it still shows the real host.
+The display uses the 60 s OLED inactivity timeout (not the 5 s Caps Word
+timeout).
+
+## Caps Word
+
+Caps Word is QMK's built-in feature, enabled only for the Kyria keymap
+(`CAPS_WORD_ENABLE = yes`). The shared userspace contributes a German-aware
+policy (`users/helmecke/features/caps_word_german.c`) only when the feature is
+enabled, so other boards do not gain Caps Word.
+
+Activation is QMK's native both-Shifts gesture: hold left and right Shift
+together and release one of them. With the home-row Shift mod-taps hold `D` and
+`K` past the preserved 200 ms tapping term, then release; explicit `LSFT`/`RSFT`
+keys on other layers and one-shot Shift work the same way (plain and mod-tap
+Shift pairs activate in either release order, one-shot shifts in QMK's tested
+order, left first). Ordinary `D`/`K` taps still type letters, and an individual
+hold still acts as Shift.
+
+While active:
+
+- Letters are shifted, including the umlaut keys.
+- The German minus key types `_`; digits stay unchanged; backspace and delete
+  keep editing the word; underscore continues it.
+- Momentary layers and layer-tap keys keep working.
+- AltGr umlauts type `Ä`, `Ö`, `Ü`; AltGr+S types `SS` (two `S` keystrokes, so
+  backspace deletes one `S` at a time). Outside Caps Word AltGr+S still types
+  `ß`.
+- AltGr+`.` (`!`), AltGr+`,` (`?`), an ordinary comma, leader entry, space,
+  Shift, shortcuts and five seconds of inactivity end the word.
+- The mode never toggles host Caps Lock, forces a layer, or leaves modifiers
+  stuck. `CAPS_WORD_INVERT_ON_SHIFT` is deliberately disabled: pressing Shift
+  ends the word first, so Shift+`/` keeps its ordinary output afterwards.
+
+The legacy smart-case sources still compile but remain disconnected from the
+dispatch chain; built-in Caps Word is the only active capitalization state.
+
+The four outer corner keys are dedicated German keys: top-left ä, top-right ü,
+bottom-left ß and bottom-right ö. With Caps Word active they type Ä/Ö/Ü, and the
+ß key types SS (two S keystrokes, so Backspace removes one S). The minus key from
+the old top-right position is still available as `DE_MINS` on the symbol layer
+and through the leader `W` action.
+
+## Host OS detection
+
+QMK detects the host from USB fingerprinting and reports it after a debounce.
+`process_detected_host_os_user()` in `users/helmecke/helmecke.c` applies it
+once, and every consumer reads the same applied value:
+
+- Windows and unknown hosts: no Ctrl/GUI swap, WinCompose Unicode mode.
+- Linux: no swap, Linux/IBus Unicode mode.
+- macOS and iOS: Ctrl/GUI swap, macOS Unicode Hex Input mode.
+
+An unknown host is displayed as unknown rather than assumed to be Windows, and
+typing keeps working. `SPLIT_DETECTED_OS_ENABLE` copies the detected value to the
+peripheral half for its display.
+
+Detection is a heuristic, not an identification: matching software must exist on
+the host (WinCompose, macOS Unicode Hex Input, Linux IBus), the host keyboard
+language is not detected, and remote desktops or unusual USB hardware can defeat
+it. QMK keeps detection state across a USB reconnect at this revision, so
+switching to a different OS host may only be picked up after a keyboard reset;
+there is no manual OS selector.
+
+## Tests
+
+`tests/README.md` describes the fixtures and how to stage and run them inside
+upstream QMK:
+
+```bash
+make test:helmecke_caps_word
+make test:helmecke_os
+```
+
+## Verification status
+
+| Check | Result |
+| ----- | ------ |
+| Full-feature KB2040 build | Passed, UF2 produced, no warnings |
+| Console-disabled KB2040 build | Passed, UF2 produced |
+| Caps Word / punctuation / tap dance / key override fixtures | Passed (18 tests) |
+| Host OS application fixtures, console-disabled | Passed (5 tests) |
+| Flash, both halves, USB on either half | Passed; enumerate as composite HID, both matrices and both encoders work |
+| Caps Word on hardware | Passed: `HELLO_WORLD123`, `ÄÖÜ`, `SS` in mode, AltGr `!`/`?` exits, comma/leader, quote/GUI, backspace, 5 s timeout |
+| Dedicated corner keys | Passed: `ä` `ü` `ß` `ö` outside Caps Word, `Ä` `Ü` `SS` `Ö` in mode |
+| OLED in both USB orientations | Passed: status screen, layer/locks, 60 s sleep and wake on either half (after the OLED sync fix below) |
+| Underglow | Passed on hardware |
+| Cirque | Blocked: connector and ribbon cable missing, so neither local nor forwarded pointing could be tested |
+| USB-C dock, both halves | Not tested in this session |
+| macOS/Linux hosts | Not tested (no hosts/input methods available) |
+
+Character-level checks were written to a scratch file on the host and compared
+byte for byte, so the reported strings are the actual HID output rather than a
+visual impression. The OLED check covered the status screen, the layer line,
+sleep after the 60 s timeout and wake from keys on either half.
+
+The image flashed during validation is the full-feature build with SHA-256
+`59556fe8883b07caa02168d1ae53292c7c808c4d31fa9d08377a655f748904c3`. Rebuilding
+the same configuration reproduces it; the console-disabled variant produces a
+different image.
+
+### OLED sync fix found during hardware validation
+
+With the USB cable on the right half, the left display switched off. The cause
+is `SPLIT_OLED_ENABLE`, which the Kyria `info.json` generates
+(`split.transport.sync.oled`); the USB half has no display, so its synced state
+is always "off" and the peripheral display was forced off. The keymap config now
+`#undef`s it after the generated `info_config.h`. Sleep, wake and the status
+screen were verified in both USB orientations afterwards.
+
+## OLED troubleshooting notes (retained)
+
+These notes are kept from the original README. They describe the problem that
+was reproduced during hardware validation:
+
+> Disable `SPLIT_OLED_ENABLE`, this syncs the status, but is wrong. It syncs it
+> based on the on/off status, but it always returns false if there is no OLED.
+> So you have to manually track and check. The best way is to also disable the
+> OLED timeout and handle that yourself, track the timeout manually, and sync
+> your own boolean over split custom data.
+
+Applied correction: `SPLIT_OLED_ENABLE` is undone in the keymap config because
+the Kyria `info.json` generates it, and the symptom (left display forced off when
+the right half is the USB half) was reproduced on current QMK. The manual
+timeout/boolean sync was not needed: each half now runs its own display timeout,
+and activity waking works because the matrix state is synced. This was verified
+on hardware in both USB orientations.
+
+## Out of scope
+
+- The Iris keymap (`keyboards/keebio/iris/`) is stale: it references shared
+  definitions that no longer exist and is not built here.
+- The community layouts under `layouts/community/` contain licence headers only,
+  not complete keymaps.
+- No manual OS selector is provided; the legacy `U_OS` key is intentionally left
+  without an event handler.

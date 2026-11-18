@@ -33,6 +33,7 @@ enum {
     U_RBRC,
     U_PLUS,
     U_OS,
+    U_SZ,
     CUSTOM_KEYCODE_END
     // clang-format on
 };
@@ -48,8 +49,12 @@ enum {
 #define HB_J RCTL_T(DE_J)
 #define HB_K RSFT_T(DE_K)
 #define HB_L LALT_T(DE_L)
-#define HB_QUOT RGUI_T(U_QUOT)
-#define HB_SCLN RGUI_T(U_SCLN)
+// QMK mod-tap stores its tap keycode in the low eight bits, so these must not
+// wrap a custom (>= SAFE_RANGE) keycode: the tap key would be truncated and a
+// bogus character would leak. The German quote/semicolon output is produced by
+// the explicit tap interception in features/german_us.c instead.
+#define HB_QUOT RGUI_T(KC_QUOT)
+#define HB_SCLN RGUI_T(KC_SCLN)
 #define HB_DOT ALGR_T(DE_DOT)
 
 // Left-thumb

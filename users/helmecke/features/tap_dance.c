@@ -6,7 +6,7 @@
 
 static td_tap_t tap_state = {.state = TD_NONE};
 
-__attribute__((weak)) td_state_t dance_state(tap_dance_state_t* state) {
+__attribute__((weak)) td_state_t dance_state(tap_dance_state_t *state) {
     if (state->count == 1) {
         if (state->interrupted || !state->pressed) return TD_SINGLE_TAP;
         // Key has not been interrupted, but the key is still held. Means you want to send a 'HOLD'.
@@ -40,7 +40,7 @@ bool is_shifted(void) {
     return get_mods() & MOD_MASK_SHIFT || get_oneshot_mods() & MOD_MASK_SHIFT || get_oneshot_locked_mods() & MOD_MASK_SHIFT;
 }
 
-void td_comm(tap_dance_state_t* state, void* user_data) {
+void td_comm(tap_dance_state_t *state, void *user_data) {
     tap_state.state = dance_state(state);
     switch (tap_state.state) {
         case TD_SINGLE_TAP:
@@ -78,6 +78,5 @@ void td_comm(tap_dance_state_t* state, void* user_data) {
     }
 }
 
-tap_dance_action_t tap_dance_actions[] = {
-    [COM_LEA] = ACTION_TAP_DANCE_FN(td_comm),
-};
+// The tap dance table itself is defined in definitions/keymap_tables.h so that
+// QMK keymap introspection can see it from the keymap translation unit.

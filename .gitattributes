@@ -1,0 +1,5 @@
+# Scripts and makefiles must keep LF line endings so they run after checkout,
+# even on Windows with core.autocrlf enabled.
+*.sh  text eol=lf
+*.mk  text eol=lf
+Makefile text eol=lf

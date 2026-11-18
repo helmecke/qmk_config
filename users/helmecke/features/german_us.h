@@ -3,6 +3,7 @@
 #include QMK_KEYBOARD_H
 
 #include "../definitions/keycodes.h"
+#include "../definitions/host_os.h"
 #include "../definitions/process_record.h"
 #ifdef OS_DETECTION_ENABLE
 #    include "os_detection.h"

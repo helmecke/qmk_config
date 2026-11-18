@@ -21,6 +21,27 @@
 #define NO_USB_STARTUP_CHECK
 #define SPLIT_USB_TIMEOUT 4000
 
+// Synchronize the detected host OS from the USB half to the peripheral half.
+// The applied OS is owned by process_detected_host_os_user() in
+// users/helmecke/helmecke.c.
+#define SPLIT_DETECTED_OS_ENABLE
+
+// The only display is on the left half, so it also renders the status screen
+// when the right half is the USB half. Layer and host lock state come from the
+// master and have to be synchronized for that screen to be correct.
+#define SPLIT_LAYER_STATE_ENABLE
+#define SPLIT_LED_STATE_ENABLE
+
+// Caps Word: both left and right Shift held, then released, turn it on. This
+// works with the D/K home-row Shift mod-taps (hold them past the preserved
+// 200 ms tapping term) and with explicit Shift keys on any layer. Current QMK
+// no longer ships the Command feature, which used the same Shift pair, so there
+// is no conflict to resolve.
+#define BOTH_SHIFTS_TURNS_ON_CAPS_WORD
+// An explicit idle timeout; CAPS_WORD_INVERT_ON_SHIFT stays disabled so Shift
+// always ends the word.
+#define CAPS_WORD_IDLE_TIMEOUT 5000
+
 #ifdef RGBLIGHT_ENABLE
 #    define RGBLIGHT_EFFECT_ALTERNATING
 #    define RGBLIGHT_EFFECT_BREATHING
@@ -47,8 +68,16 @@
   #define ENCODER_DIRECTION_FLIP
 #endif
 
-#ifdef OLED_ENABLE
-#define SPLIT_OLED_ENABLE
+// Only the left half has a display. The Kyria info.json enables OLED state sync
+// (split.transport.sync.oled), which is generated into info_config.h as
+// SPLIT_OLED_ENABLE. That sync sends the master's on/off state to the
+// peripheral half; when the USB half has no display its state is always "off",
+// which turns the left display off when the right half is the USB half. This
+// file is included after info_config.h, so undo the sync here. Each half then
+// drives its own display and timeout, and because the master's matrix state is
+// synced, activity on either half still wakes the display.
+#ifdef SPLIT_OLED_ENABLE
+#    undef SPLIT_OLED_ENABLE
 #endif
 
 #ifdef POINTING_DEVICE_ENABLE
