@@ -11,7 +11,7 @@ const key_override_t adia_key_override = ko_make_basic(MOD_BIT(KC_RALT), HB_A, D
 const key_override_t udia_key_override = ko_make_basic(MOD_BIT(KC_RALT), DE_U, DE_UDIA);
 const key_override_t odia_key_override = ko_make_basic(MOD_BIT(KC_RALT), DE_O, DE_ODIA);
 const key_override_t exlm_key_override = ko_make_basic(MOD_BIT(KC_RALT), HB_DOT, DE_EXLM);
-const key_override_t ques_key_override = ko_make_basic(MOD_BIT(KC_RALT), TD_COMM, DE_QUES);
+const key_override_t ques_key_override = ko_make_basic(MOD_BIT(KC_RALT), DE_COMM, DE_QUES);
 
 #ifdef CAPS_WORD_ENABLE
 // AltGr+S types ß. The capital form of ß is "SS", so while Caps Word is active

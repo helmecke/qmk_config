@@ -27,7 +27,7 @@
 #define ___L_BOT__QWERTY___________________________ DE_Z,    HB_X,    DE_C,    DE_V,    DE_B
 #define ___R_TOP__QWERTY___________________________ DE_Y,    DE_U,    DE_I,    DE_O,    DE_P
 #define ___R_HOME_QWERTY___________________________ DE_H,    HB_J,    HB_K,    HB_L,    HB_QUOT
-#define ___R_BOT__QWERTY___________________________ DE_N,    DE_M,    TD_COMM, HB_DOT,  U_SLSH
+#define ___R_BOT__QWERTY___________________________ DE_N,    DE_M,    DE_COMM, HB_DOT,  U_SLSH
 #define ___L_TOP__MOUSE____________________________ MS_WHLL, MS_WHLU, MS_UP,   MS_WHLD, MS_WHLR
 #define ___L_HOME_MOUSE____________________________ _______, MS_LEFT, MS_DOWN, MS_RGHT, _______
 #define ___L_BOT__MOUSE____________________________ _______, MS_BTN2, MS_BTN3, MS_BTN1, _______

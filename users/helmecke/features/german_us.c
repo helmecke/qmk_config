@@ -11,14 +11,10 @@
 // core Caps Word never sees these events because this handler consumes them.
 static bool is_custom_punctuation(uint16_t keycode) {
     switch (keycode) {
-        case U_QUOT:
         case HB_QUOT:
-        case U_SCLN:
-        case HB_SCLN:
         case U_SLSH:
         case U_LBRC:
         case U_RBRC:
-        case U_PLUS:
         case DE_AT:
         case DE_GRV:
         case DE_CIRC:
@@ -53,16 +49,6 @@ process_record_result_t process_german_us(uint16_t keycode, keyrecord_t *record)
 #endif // CAPS_WORD_ENABLE
 
     switch (keycode) {
-        case U_QUOT:
-            if (record->event.pressed) {
-                if (saved_mods & (MOD_BIT(KC_LSFT) | MOD_BIT(KC_RSFT))) {
-                    tap_code16(DE_DQUO);
-                } else {
-                    tap_code16(DE_QUOT);
-                }
-                return PROCESS_RECORD_RETURN_FALSE;
-            }
-            break;
         case HB_QUOT:
             if (record->tap.count && record->event.pressed) {
                 if (saved_mods & (MOD_BIT(KC_LSFT) | MOD_BIT(KC_RSFT))) {
@@ -88,30 +74,6 @@ process_record_result_t process_german_us(uint16_t keycode, keyrecord_t *record)
                 }
 #endif // CAPS_WORD_ENABLE
                 tap_code16(DE_SS);
-                return PROCESS_RECORD_RETURN_FALSE;
-            }
-            break;
-        case U_SCLN:
-            if (record->event.pressed) {
-                if (saved_mods & (MOD_BIT(KC_LSFT) | MOD_BIT(KC_RSFT))) {
-                    del_mods(MOD_MASK_SHIFT);
-                    tap_code16(DE_COLN);
-                    set_mods(saved_mods);
-                } else {
-                    tap_code16(DE_SCLN);
-                }
-                return PROCESS_RECORD_RETURN_FALSE;
-            }
-            break;
-        case HB_SCLN:
-            if (record->tap.count && record->event.pressed) {
-                if (saved_mods & (MOD_BIT(KC_LSFT) | MOD_BIT(KC_RSFT))) {
-                    del_mods(MOD_MASK_SHIFT);
-                    tap_code16(DE_COLN);
-                    set_mods(saved_mods);
-                } else {
-                    tap_code16(DE_SCLN);
-                }
                 return PROCESS_RECORD_RETURN_FALSE;
             }
             break;
@@ -167,18 +129,6 @@ process_record_result_t process_german_us(uint16_t keycode, keyrecord_t *record)
                     } else {
                         tap_code16(DE_RBRC);
                     }
-                }
-                return PROCESS_RECORD_RETURN_FALSE;
-            }
-            break;
-        case U_PLUS:
-            if (record->event.pressed) {
-                if (saved_mods & (MOD_BIT(KC_LSFT) | MOD_BIT(KC_RSFT))) {
-                    del_mods(MOD_MASK_SHIFT);
-                    tap_code16(DE_EQL);
-                    set_mods(saved_mods);
-                } else {
-                    tap_code16(DE_PLUS);
                 }
                 return PROCESS_RECORD_RETURN_FALSE;
             }

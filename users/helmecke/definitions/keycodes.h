@@ -3,36 +3,13 @@
 #include "layers.h"
 #include "keymap_german.h"
 
-#ifdef TAP_DANCE_ENABLE
-// Tap Dance Declarations
-enum {
-    // clang-format off
-    TD_CODE_START,
-    COM_LEA,
-    TD_CODE_END
-    // clang-format on
-};
-
-#    define TD_COMM TD(COM_LEA)
-#else
-#    define TD_COMM DE_COMM
-#endif
-
 // Custom keycodes
 enum {
     // clang-format off
     CUSTOM_KEYCODE_START = SAFE_RANGE,
-    STORE_SETUPS,
-    PRINT_SETUPS,
-    TG_MAC,
-    TG_WIN,
-    U_QUOT,
-    U_SCLN,
     U_SLSH,
     U_LBRC,
     U_RBRC,
-    U_PLUS,
-    U_OS,
     U_SZ,
     CUSTOM_KEYCODE_END
     // clang-format on
@@ -51,10 +28,9 @@ enum {
 #define HB_L LALT_T(DE_L)
 // QMK mod-tap stores its tap keycode in the low eight bits, so these must not
 // wrap a custom (>= SAFE_RANGE) keycode: the tap key would be truncated and a
-// bogus character would leak. The German quote/semicolon output is produced by
-// the explicit tap interception in features/german_us.c instead.
+// bogus character would leak. The German quote output is produced by the
+// explicit tap interception in features/german_us.c instead.
 #define HB_QUOT RGUI_T(KC_QUOT)
-#define HB_SCLN RGUI_T(KC_SCLN)
 #define HB_DOT ALGR_T(DE_DOT)
 
 // Left-thumb
@@ -70,26 +46,9 @@ enum {
 #define U_RST QK_BOOT
 #define U_DBG DB_TOGG
 
-#if defined(OS_DETECTION_ENABLE) && defined(OS_DETECTION_DEBUG_ENABLE)
-#    define U_SS STORE_SETUPS
-#    define U_PS PRINT_SETUPS
-#else
-#    define U_SS _______
-#    define U_PS _______
-#endif
-
-#define OS_CTL OSM(MOD_LCTL)
-#define OS_SFT OSM(MOD_LSFT)
-#define OS_ALT OSM(MOD_LALT)
-#define OS_GUI OSM(MOD_LGUI)
-#define OS_ALGR OSM(MOD_RALT)
-#define OS_NSYM OSL(_NSYM)
-
 #define SC_UNDO LCTL(DE_Z)
 #define SC_REDO LCTL(DE_Y)
 #define SC_CUT LCTL(DE_X)
 #define SC_COPY LCTL(DE_C)
 #define SC_PSTE LCTL(DE_V)
 #define SC_SPST LSFT(KC_INS)
-
-uint16_t extract_tapping_keycode(uint16_t keycode);

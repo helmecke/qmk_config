@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 // German-aware Caps Word integration, exercised through QMK's real event
-// processing: the shared userspace dispatcher, tap dance, key overrides and
-// Caps Word are all compiled from their normal sources.
+// processing: the shared userspace dispatcher, key overrides and Caps Word are
+// all compiled from their normal sources.
 
 #include "keyboard_report_util.hpp"
 #include "keycode.h"
@@ -14,9 +14,6 @@
 extern "C" {
 #include "../../users/helmecke/definitions/keycodes.h"
 #include "../../users/helmecke/definitions/layers.h"
-
-bool leader_sequence_active(void);
-void leader_end(void);
 }
 
 using ::testing::_;
@@ -303,7 +300,7 @@ TEST_F(CapsWordIntegration, AltGrPunctuationEndsCapsWord) {
 
     KeymapKey altgr(0, 0, 0, HB_X);
     KeymapKey dot(0, 1, 0, HB_DOT);
-    KeymapKey comma(0, 2, 0, TD_COMM);
+    KeymapKey comma(0, 2, 0, DE_COMM);
     set_keymap({altgr, dot, comma});
 
     // Caps Word first, then AltGr: activating Caps Word clears held modifiers,
@@ -318,7 +315,6 @@ TEST_F(CapsWordIntegration, AltGrPunctuationEndsCapsWord) {
     EXPECT_FALSE(is_caps_word_on());
     altgr.release();
     run_one_scan_loop();
-    idle_for(TAPPING_TERM + 1);
 
     caps_word_on();
     holdKey(altgr);
@@ -427,38 +423,112 @@ TEST_F(CapsWordIntegration, DedicatedUmlautKeys) {
     VERIFY_AND_CLEAR(driver);
 }
 
-// Ordinary comma taps end the word and keep the comma; a double tap starts the
-// custom leader instead.
-TEST_F(CapsWordIntegration, CommaAndLeader) {
+// A plain comma types one comma per press. Rapid repeated presses are ordinary
+// repeats, not a leader or tap-dance sequence, and a press ends Caps Word on
+// the press itself rather than after a tapping term.
+TEST_F(CapsWordIntegration, PlainCommaTaps) {
     TestDriver driver;
     allow_modifier_reports(driver);
 
-    KeymapKey comma(0, 0, 0, TD_COMM);
-    set_keymap({comma});
+    KeymapKey comma(0, 0, 0, DE_COMM);
+    KeymapKey a(0, 1, 0, DE_A);
+    set_keymap({comma, a});
 
-    caps_word_on();
+    // Single tap, outside Caps Word.
+    caps_word_off();
     {
         InSequence s;
         EXPECT_REPORT(driver, (KC_COMM));
     }
     tapKey(comma);
-    idle_for(TAPPING_TERM + 1);
-    EXPECT_FALSE(is_caps_word_on());
 
+    // Rapid double tap: two commas, and Caps Word ends on the first press.
     caps_word_on();
+    {
+        InSequence s;
+        EXPECT_REPORT(driver, (KC_COMM));
+        EXPECT_REPORT(driver, (KC_COMM));
+    }
     comma.press();
     run_one_scan_loop();
+    EXPECT_FALSE(is_caps_word_on());
     comma.release();
     run_one_scan_loop();
     comma.press();
     run_one_scan_loop();
     comma.release();
+    run_one_scan_loop();
+
+    // Rapid triple tap: three commas, still no leader state and no swallowed
+    // key afterwards.
+    {
+        InSequence s;
+        EXPECT_REPORT(driver, (KC_COMM));
+        EXPECT_REPORT(driver, (KC_COMM));
+        EXPECT_REPORT(driver, (KC_COMM));
+    }
+    tapKey(comma);
+    tapKey(comma);
+    tapKey(comma);
+    {
+        InSequence s;
+        EXPECT_REPORT(driver, (KC_A));
+    }
+    tapKey(a);
+
+    VERIFY_AND_CLEAR(driver);
+}
+
+// A held comma types its comma on the press and nothing else: no End
+// keystroke, no leader, and the next key still types.
+TEST_F(CapsWordIntegration, CommaHold) {
+    TestDriver driver;
+    allow_modifier_reports(driver);
+
+    KeymapKey comma(0, 0, 0, DE_COMM);
+    KeymapKey a(0, 1, 0, DE_A);
+    set_keymap({comma, a});
+
+    caps_word_off();
+    {
+        InSequence s;
+        EXPECT_REPORT(driver, (KC_COMM));
+    }
+    comma.press();
     run_one_scan_loop();
     idle_for(TAPPING_TERM + 1);
-    EXPECT_TRUE(leader_sequence_active());
-    EXPECT_FALSE(is_caps_word_on());
+    comma.release();
+    run_one_scan_loop();
 
-    leader_end();
+    {
+        InSequence s;
+        EXPECT_REPORT(driver, (KC_A));
+    }
+    tapKey(a);
+
+    VERIFY_AND_CLEAR(driver);
+}
+
+// Shift+comma keeps producing the German semicolon; nothing is intercepted.
+TEST_F(CapsWordIntegration, ShiftComma) {
+    TestDriver driver;
+    allow_modifier_reports(driver);
+
+    KeymapKey sft(0, 0, 0, KC_LSFT);
+    KeymapKey comma(0, 1, 0, DE_COMM);
+    set_keymap({sft, comma});
+
+    caps_word_off();
+    sft.press();
+    run_one_scan_loop();
+    {
+        InSequence s;
+        EXPECT_REPORT(driver, (KC_LSFT, KC_COMM));
+    }
+    tapKey(comma);
+    sft.release();
+    run_one_scan_loop();
+
     VERIFY_AND_CLEAR(driver);
 }
 
@@ -468,17 +538,17 @@ TEST_F(CapsWordIntegration, ConsumedPunctuationEndsCapsWord) {
     TestDriver driver;
     allow_modifier_reports(driver);
 
-    KeymapKey plus(0, 0, 0, U_PLUS);
+    KeymapKey lbrc(0, 0, 0, U_LBRC);
     KeymapKey slash(0, 1, 0, U_SLSH);
     KeymapKey a(0, 2, 0, KC_A);
-    set_keymap({plus, slash, a});
+    set_keymap({lbrc, slash, a});
 
     caps_word_on();
     {
         InSequence s;
-        EXPECT_REPORT(driver, (KC_RBRC)); // German "+" unshifted
+        EXPECT_REPORT(driver, (KC_RALT, KC_8)); // German "[" unshifted
     }
-    tapKey(plus);
+    tapKey(lbrc);
     EXPECT_FALSE(is_caps_word_on());
 
     caps_word_on();
@@ -654,87 +724,33 @@ TEST_F(CapsWordIntegration, QuoteGuiModTap) {
     VERIFY_AND_CLEAR(driver);
 }
 
-// A held comma sends End and a comma, still outside Caps Word.
-TEST_F(CapsWordIntegration, CommaHoldDance) {
+// An interrupted comma press still emits the comma exactly once and leaves no
+// stuck state, and Caps Word ends on the press rather than on release.
+TEST_F(CapsWordIntegration, CommaInterruptedPress) {
     TestDriver driver;
     allow_modifier_reports(driver);
 
-    KeymapKey comma(0, 0, 0, TD_COMM);
-    set_keymap({comma});
-
-    caps_word_on();
-    comma.press();
-    run_one_scan_loop();
-    {
-        InSequence s;
-        EXPECT_REPORT(driver, (KC_END));
-        EXPECT_REPORT(driver, (KC_COMM));
-    }
-    idle_for(TAPPING_TERM + 1);
-    comma.release();
-    run_one_scan_loop();
-    EXPECT_FALSE(is_caps_word_on());
-
-    VERIFY_AND_CLEAR(driver);
-}
-
-// An interrupted comma tap still emits the comma and leaves no stuck state.
-TEST_F(CapsWordIntegration, CommaInterruptedTap) {
-    TestDriver driver;
-    allow_modifier_reports(driver);
-
-    KeymapKey comma(0, 0, 0, TD_COMM);
+    KeymapKey comma(0, 0, 0, DE_COMM);
     KeymapKey a(0, 1, 0, KC_A);
     set_keymap({comma, a});
 
     caps_word_on();
+    {
+        InSequence s;
+        EXPECT_REPORT(driver, (KC_COMM));
+        EXPECT_REPORT(driver, (KC_A, KC_COMM));
+        EXPECT_REPORT(driver, (KC_COMM));
+    }
     comma.press();
     run_one_scan_loop();
     EXPECT_FALSE(is_caps_word_on());
 
-    {
-        InSequence s;
-        EXPECT_REPORT(driver, (KC_COMM));
-        EXPECT_REPORT(driver, (KC_A));
-    }
     a.press();
     run_one_scan_loop();
     a.release();
     run_one_scan_loop();
     comma.release();
     run_one_scan_loop();
-    idle_for(TAPPING_TERM + 1);
-
-    VERIFY_AND_CLEAR(driver);
-}
-
-// The leader W action still works outside capitalization handling.
-TEST_F(CapsWordIntegration, LeaderWAction) {
-    TestDriver driver;
-    allow_modifier_reports(driver);
-
-    KeymapKey comma(0, 0, 0, TD_COMM);
-    KeymapKey w(0, 1, 0, DE_W);
-    set_keymap({comma, w});
-
-    caps_word_off();
-    comma.press();
-    run_one_scan_loop();
-    comma.release();
-    run_one_scan_loop();
-    comma.press();
-    run_one_scan_loop();
-    comma.release();
-    run_one_scan_loop();
-    idle_for(TAPPING_TERM + 1);
-    ASSERT_TRUE(leader_sequence_active());
-
-    {
-        InSequence s;
-        EXPECT_REPORT(driver, (KC_SLSH)); // German minus, the leader W action
-    }
-    tapKey(w);
-    EXPECT_FALSE(leader_sequence_active());
 
     VERIFY_AND_CLEAR(driver);
 }

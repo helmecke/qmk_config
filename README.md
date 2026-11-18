@@ -3,25 +3,23 @@
 Personal QMK configuration for a Kyria v2.1 with an Adafruit KB2040 (RP2040)
 controller in each half. The Kyria keymap lives in
 `keyboards/splitkb/kyria/keymaps/helmecke/`, the shared userspace in
-`users/helmecke/`.
-
-The Iris keymap and the community layouts in this repository are not maintained
-here; see [Out of scope](#out-of-scope) below.
+`users/helmecke/`. The removal of unreachable configuration and retired
+features, with the resulting validation, is recorded under
+[Verification status](#verification-status).
 
 ## Build
 
 ### Toolchain and checkout
 
-The firmware is built with upstream QMK, not with the symlink layout that the
-root `Makefile` assumes (that layout expects `../../qmk/qmk_firmware` and a
-`helmecke/qmk_config` directory and does not work on Windows). Instead, stage
-this repository into a QMK checkout:
+The firmware is built with upstream QMK. Stage this repository into a QMK
+checkout rather than symlinking it:
 
 ```bash
 git clone https://github.com/qmk/qmk_firmware.git
 cd qmk_firmware
 git checkout 8252b6309752f0be6882c387e15989ba51323d8f
-git submodule update --init --recursive lib/chibios lib/chibios-contrib lib/pico-sdk lib/googletest
+git submodule update --init --recursive \
+    lib/chibios lib/chibios-contrib lib/pico-sdk lib/lufa lib/googletest lib/printf
 
 /path/to/qmk_config/tests/stage-into-qmk.sh "$PWD"
 ```
@@ -31,10 +29,13 @@ If the script is not executable on your platform, run it with `bash
 
 `tests/stage-into-qmk.sh` copies `users/helmecke`, the Kyria keymap and the
 fixtures under `tests/` into the checkout. Nothing is symlinked and no QMK
-sources are modified.
+sources are modified. The six submodules above are what the RP2040 build and
+the fixtures need: `lib/lufa` for the LL-style USB headers, `lib/printf` for the
+fixtures' logging, `lib/googletest` for the fixtures themselves.
 
-The recorded build used QMK master `8252b6309752f0be6882c387e15989ba51323d8f`
-(2026-11-16) and the container image `ghcr.io/qmk/qmk_cli:latest`, digest
+The recorded builds used QMK master
+`8252b6309752f0be6882c387e15989ba51323d8f` and the container image
+`ghcr.io/qmk/qmk_cli:latest`, digest
 `sha256:b7d7fa8fb4432b569931de5ad59098cb788f440ed61a62c5126746b71aee0f4a`.
 
 ### Commands
@@ -153,20 +154,24 @@ While active:
 - AltGr umlauts type `Ä`, `Ö`, `Ü`; AltGr+S types `SS` (two `S` keystrokes, so
   backspace deletes one `S` at a time). Outside Caps Word AltGr+S still types
   `ß`.
-- AltGr+`.` (`!`), AltGr+`,` (`?`), an ordinary comma, leader entry, space,
-  Shift, shortcuts and five seconds of inactivity end the word.
+- AltGr+`.` (`!`), AltGr+`,` (`?`), an ordinary comma, space, Shift, shortcuts
+  and five seconds of inactivity end the word.
 - The mode never toggles host Caps Lock, forces a layer, or leaves modifiers
   stuck. `CAPS_WORD_INVERT_ON_SHIFT` is deliberately disabled: pressing Shift
   ends the word first, so Shift+`/` keeps its ordinary output afterwards.
 
-The legacy smart-case sources still compile but remain disconnected from the
-dispatch chain; built-in Caps Word is the only active capitalization state.
-
 The four outer corner keys are dedicated German keys: top-left ä, top-right ü,
 bottom-left ß and bottom-right ö. With Caps Word active they type Ä/Ö/Ü, and the
 ß key types SS (two S keystrokes, so Backspace removes one S). The minus key from
-the old top-right position is still available as `DE_MINS` on the symbol layer
-and through the leader `W` action.
+the old top-right position is available as `DE_MINS` on the symbol layer.
+
+### Comma
+
+`,` is a plain `DE_COMM` key. Every press types exactly one comma: repeated
+presses are repeats, and holding it types the comma on the press without sending
+End or waiting for a tapping term. An ordinary comma ends Caps Word on the press
+itself; AltGr+`,` afterwards activates the `?` key override, which QMK processes
+after Caps Word.
 
 ## Host OS detection
 
@@ -174,20 +179,18 @@ QMK detects the host from USB fingerprinting and reports it after a debounce.
 `process_detected_host_os_user()` in `users/helmecke/helmecke.c` applies it
 once, and every consumer reads the same applied value:
 
-- Windows and unknown hosts: no Ctrl/GUI swap, WinCompose Unicode mode.
-- Linux: no swap, Linux/IBus Unicode mode.
-- macOS and iOS: Ctrl/GUI swap, macOS Unicode Hex Input mode.
+- Windows, Linux and unknown hosts: no Ctrl/GUI swap.
+- macOS and iOS: Ctrl/GUI swap.
 
 An unknown host is displayed as unknown rather than assumed to be Windows, and
 typing keeps working. `SPLIT_DETECTED_OS_ENABLE` copies the detected value to the
 peripheral half for its display.
 
-Detection is a heuristic, not an identification: matching software must exist on
-the host (WinCompose, macOS Unicode Hex Input, Linux IBus), the host keyboard
-language is not detected, and remote desktops or unusual USB hardware can defeat
-it. QMK keeps detection state across a USB reconnect at this revision, so
-switching to a different OS host may only be picked up after a keyboard reset;
-there is no manual OS selector.
+Detection is a heuristic, not an identification: the host keyboard language is
+not detected, and remote desktops or unusual USB hardware can defeat it. QMK
+keeps detection state across a USB reconnect at this revision, so switching to a
+different OS host may only be picked up after a keyboard reset; there is no
+manual OS selector.
 
 ## Tests
 
@@ -200,6 +203,12 @@ make test:helmecke_os
 ```
 
 ## Verification status
+
+Two dated runs are recorded. The earlier one belongs to the source before the
+cleanup and identifies the rollback image; the later one records the cleanup.
+Old counts and hashes are history, not evidence for the current image.
+
+### Pre-cleanup run (2026-11-17) — rollback identity
 
 | Check | Result |
 | ----- | ------ |
@@ -221,10 +230,40 @@ byte for byte, so the reported strings are the actual HID output rather than a
 visual impression. The OLED check covered the status screen, the layer line,
 sleep after the 60 s timeout and wake from keys on either half.
 
-The image flashed during validation is the full-feature build with SHA-256
-`59556fe8883b07caa02168d1ae53292c7c808c4d31fa9d08377a655f748904c3`. Rebuilding
-the same configuration reproduces it; the console-disabled variant produces a
-different image.
+That image has SHA-256
+`59556fe8883b07caa02168d1ae53292c7c808c4d31fa9d08377a655f748904c3`. It is kept
+outside this repository as the rollback artifact
+`kyria-kb2040-helmecke-pre-cleanup.uf2`, so a half can be returned to the last
+fully validated behaviour.
+
+### Cleanup run (2026-11-18)
+
+| Check | Result |
+| ----- | ------ |
+| Full-feature KB2040 build | Passed, UF2 produced, no compiler warnings |
+| Console-disabled KB2040 build | Passed, UF2 produced, no compiler warnings |
+| Caps Word / punctuation / key override fixtures | Passed (18 tests) |
+| Host OS application fixtures, console-disabled | Passed (5 tests) |
+| Flash, both halves, same firmware | Passed; both matrices type and the left OLED shows the OS logo and layer name |
+| Remaining layers, both encoders | Passed: QWERTY, NAV, NUM, SYM, FUN, MOUSE and ADJUST are reachable; volume works on both halves |
+| Former debug slot on `_ADJUST` | Passed: it is transparent and types `b`; `U_DBG` on its own slot still toggles console debug |
+| Plain comma | Passed: single, double and triple presses type 1/2/3 commas, a hold types one comma with no End, and the following letter is not swallowed |
+| AltGr punctuation | Passed: AltGr+`,` types `?` and AltGr+`.` types `!` |
+| Caps Word | Passed: `HELLO_WORLD123`, `ÄÖÜ`, `SS`, comma exits the word on the press, quote/GUI work, the 5 s timeout ends it |
+| Not re-checked | Underglow wiring, the Cirque, the USB-C dock, the 60 s OLED sleep/wake and the opposite USB orientation; the 2026-11-17 run stands for them because this change cannot affect them |
+| macOS/Linux hosts | Not tested (no hosts available) |
+
+Hardware checks were run on both halves with the same image, as required by the
+renumbered layers. The Cirque remains untestable while its connector and ribbon
+cable are missing; pointing behaviour is therefore still unvalidated.
+
+The full-feature image has SHA-256
+`780ea86f953153504d3aac16944dacf72ce38697b04d608d4a390a97a091a344`; the
+console-disabled variant has
+`eba543f2e2ba9b83cc81f53384a25e99b1caf2ce9d6257b9180f72a2f12ab86c`. Both are
+kept outside this repository next to the rollback artifact. Rebuilding the same
+configuration reproduces each image; the two variants differ because console
+support changes the compiled output.
 
 ### OLED sync fix found during hardware validation
 
@@ -253,11 +292,9 @@ timeout/boolean sync was not needed: each half now runs its own display timeout,
 and activity waking works because the matrix state is synced. This was verified
 on hardware in both USB orientations.
 
-## Out of scope
+## Scope
 
-- The Iris keymap (`keyboards/keebio/iris/`) is stale: it references shared
-  definitions that no longer exist and is not built here.
-- The community layouts under `layouts/community/` contain licence headers only,
-  not complete keymaps.
-- No manual OS selector is provided; the legacy `U_OS` key is intentionally left
-  without an event handler.
+- Only the Kyria v2.1 with KB2040 halves is maintained. The Iris keymap and the
+  community-layout adapters are not part of this repository any more, so there
+  is no second reachability root to keep in sync.
+- No manual OS selector is provided; OS selection is automatic.

@@ -1,9 +1,9 @@
 // Copyright 2026 Jakob Helmecke
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-// Debounced host OS application: the applied OS drives modifier swapping,
-// Unicode input mode and Apple-specific punctuation, and is only updated from
-// QMK's debounced detected-OS callback.
+// Debounced host OS application: the applied OS drives modifier swapping and
+// Apple-specific punctuation, and is only updated from QMK's debounced
+// detected-OS callback.
 
 #include "keyboard_report_util.hpp"
 #include "keycode.h"
@@ -13,7 +13,6 @@
 
 extern "C" {
 #include "os_detection.h"
-#include "unicode/unicode.h"
 #include "usb_device_state.h"
 
 bool         helmecke_os_is_apple(void);
@@ -71,7 +70,6 @@ TEST_F(HelmeckeOs, AppliesWindows) {
     EXPECT_FALSE(helmecke_os_is_apple());
     EXPECT_FALSE(keymap_config.swap_lctl_lgui);
     EXPECT_FALSE(keymap_config.swap_rctl_rgui);
-    EXPECT_EQ(get_unicode_input_mode(), UNICODE_MODE_WINCOMPOSE);
 
     VERIFY_AND_CLEAR(driver);
 }
@@ -85,7 +83,6 @@ TEST_F(HelmeckeOs, AppliesLinux) {
     EXPECT_EQ(helmecke_os(), OS_LINUX);
     EXPECT_FALSE(helmecke_os_is_apple());
     EXPECT_FALSE(keymap_config.swap_lctl_lgui);
-    EXPECT_EQ(get_unicode_input_mode(), UNICODE_MODE_LINUX);
 
     VERIFY_AND_CLEAR(driver);
 }
@@ -100,7 +97,6 @@ TEST_F(HelmeckeOs, AppliesMacosAndIosAsApple) {
     EXPECT_TRUE(helmecke_os_is_apple());
     EXPECT_TRUE(keymap_config.swap_lctl_lgui);
     EXPECT_TRUE(keymap_config.swap_rctl_rgui);
-    EXPECT_EQ(get_unicode_input_mode(), UNICODE_MODE_MACOS);
 
     connectAndFeed(ios_setup);
     settle();
@@ -108,7 +104,6 @@ TEST_F(HelmeckeOs, AppliesMacosAndIosAsApple) {
     EXPECT_EQ(helmecke_os(), OS_IOS);
     EXPECT_TRUE(helmecke_os_is_apple());
     EXPECT_TRUE(keymap_config.swap_lctl_lgui);
-    EXPECT_EQ(get_unicode_input_mode(), UNICODE_MODE_MACOS);
 
     VERIFY_AND_CLEAR(driver);
 }
@@ -128,7 +123,6 @@ TEST_F(HelmeckeOs, UnknownHostKeepsSafeDefaults) {
     EXPECT_EQ(helmecke_os(), OS_UNSURE);
     EXPECT_FALSE(helmecke_os_is_apple());
     EXPECT_FALSE(keymap_config.swap_lctl_lgui);
-    EXPECT_EQ(get_unicode_input_mode(), UNICODE_MODE_WINCOMPOSE);
 
     EXPECT_CALL(driver, send_keyboard_mock(_)).Times(AnyNumber());
     KeymapKey a(0, 0, 0, KC_A);
@@ -150,24 +144,20 @@ TEST_F(HelmeckeOs, AppliesAfterDebounceAndFollowsHostChanges) {
     idle_for(OS_DETECTION_DEBOUNCE - 10);
     EXPECT_EQ(helmecke_os(), OS_MACOS);
     EXPECT_TRUE(keymap_config.swap_lctl_lgui);
-    EXPECT_EQ(get_unicode_input_mode(), UNICODE_MODE_MACOS);
 
     idle_for(20);
     EXPECT_EQ(helmecke_os(), OS_LINUX);
     EXPECT_FALSE(keymap_config.swap_lctl_lgui);
-    EXPECT_EQ(get_unicode_input_mode(), UNICODE_MODE_LINUX);
 
     connectAndFeed(windows_setup);
     settle();
     EXPECT_EQ(helmecke_os(), OS_WINDOWS);
     EXPECT_FALSE(keymap_config.swap_lctl_lgui);
-    EXPECT_EQ(get_unicode_input_mode(), UNICODE_MODE_WINCOMPOSE);
 
     connectAndFeed(macos_setup);
     settle();
     EXPECT_EQ(helmecke_os(), OS_MACOS);
     EXPECT_TRUE(keymap_config.swap_lctl_lgui);
-    EXPECT_EQ(get_unicode_input_mode(), UNICODE_MODE_MACOS);
 
     VERIFY_AND_CLEAR(driver);
 }

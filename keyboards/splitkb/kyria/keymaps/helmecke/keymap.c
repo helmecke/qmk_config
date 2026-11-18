@@ -53,7 +53,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_ADJUST] = LAYOUT_wrapper(
       _______, _______, _______, _______, _______, _______,                                            _______, _______, _______, _______,  _______, _______,
       _______, _______, _______, _______, _______, _______,                                            UG_TOGG, UG_SATU, UG_HUEU, UG_VALU,  UG_NEXT, _______,
-      _______, U_DBG  , _______, _______, _______, U_PS   ,_______, _______,         _______, _______, _______, UG_SATD, UG_HUED, UG_VALD, UG_PREV, _______,
+      _______, U_DBG  , _______, _______, _______, _______, _______, _______,         _______, _______, _______, UG_SATD, UG_HUED, UG_VALD, UG_PREV, _______,
                                  _______, _______, _______,_______, _______,         _______, _______, _______, _______, _______
     ),
 
@@ -84,11 +84,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // clang-format off
 const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][2] = {
     [_QWERTY] = { { KC_VOLD, KC_VOLU }, { KC_MPRV, KC_MNXT } },
-    // The layer enum keeps holes for the retired _NSYM and _UMLAUT layers; QMK
-    // requires the encoder map to cover every keymap layer, so mirror the
-    // reachable mappings instead of renumbering the layers.
-    [_NSYM] = { { KC_VOLD, KC_VOLU }, { KC_MPRV, KC_MNXT } },
-    [_UMLAUT] = { { KC_VOLD, KC_VOLU }, { KC_MPRV, KC_MNXT } },
     [_NAV] = { { KC_VOLD, KC_VOLU }, { KC_MPRV, KC_MNXT } },
     [_NUM] = { { KC_VOLD, KC_VOLU }, { KC_MPRV, KC_MNXT } },
     [_SYM] = { { KC_VOLD, KC_VOLU }, { KC_MPRV, KC_MNXT } },

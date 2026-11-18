@@ -12,11 +12,10 @@ void matrix_scan_user(void) {
 // Host settings that have actually been applied to the host-facing features.
 // QMK detects the OS asynchronously and debounces the result; this value only
 // changes in the debounced process_detected_host_os_user() callback, so
-// modifier swapping, punctuation, Unicode mode and display reporting all read
-// the same view. OS_UNSURE means "nothing applied yet" and keeps normal typing
-// available with non-Apple settings. The peripheral half never applies host
-// settings and reports the synchronized detected value instead (see
-// helmecke_os()).
+// modifier swapping, punctuation and display reporting all read the same view.
+// OS_UNSURE means "nothing applied yet" and keeps normal typing available with
+// non-Apple settings. The peripheral half never applies host settings and
+// reports the synchronized detected value instead (see helmecke_os()).
 static os_variant_t applied_os = OS_UNSURE;
 
 os_variant_t helmecke_os(void) {
@@ -45,27 +44,6 @@ bool process_detected_host_os_user(os_variant_t os) {
     if (is_keyboard_master()) {
         const bool is_apple                          = (os == OS_MACOS) || (os == OS_IOS);
         keymap_config.swap_lctl_lgui = keymap_config.swap_rctl_rgui = is_apple;
-
-#    ifdef UNICODE_COMMON_ENABLE
-        uint8_t mode;
-        switch (os) {
-            case OS_LINUX:
-                mode = UNICODE_MODE_LINUX;
-                break;
-            case OS_MACOS:
-            case OS_IOS:
-                mode = UNICODE_MODE_MACOS;
-                break;
-            default:
-                // Windows and an unknown host keep WinCompose, the existing
-                // Windows input method, as the safe non-Apple default.
-                mode = UNICODE_MODE_WINCOMPOSE;
-                break;
-        }
-        if (mode != get_unicode_input_mode()) {
-            set_unicode_input_mode(mode);
-        }
-#    endif // UNICODE_COMMON_ENABLE
     }
 
     switch (os) {
@@ -119,29 +97,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     // clang-format on
 #endif
 
-#ifdef CUSTOM_LEADER_ENABLE
-    switch (process_leader(keycode, record)) {
-        case PROCESS_RECORD_RETURN_TRUE:
-            return true;
-        case PROCESS_RECORD_RETURN_FALSE:
-            return false;
-        default:
-            break;
-    }
-        // if (!process_leader(keycode, record)) {
-        //     return_state = false;
-        // }
-#endif
-
 #ifdef GERMAN_US_ENABLE
-    switch (process_german_us(keycode, record)) {
-        case PROCESS_RECORD_RETURN_TRUE:
-            return true;
-        case PROCESS_RECORD_RETURN_FALSE:
-            return false;
-        default:
-            break;
-    };
+    // German-US punctuation is the only local handler. It reports TRUE when the
+    // event was consumed after being emitted and FALSE when it was consumed
+    // without reaching the action layer; anything else continues to QMK.
+    return process_german_us(keycode, record) != PROCESS_RECORD_RETURN_FALSE;
 #endif /* ifdef GERMAN_US_ENABLE */
 
     return true;

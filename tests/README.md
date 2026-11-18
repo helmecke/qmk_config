@@ -2,27 +2,27 @@
 
 These are focused regression fixtures for the parts of the configuration that
 QMK does not cover on its own: the German-aware Caps Word policy, the shared
-German/US punctuation handler, key overrides, tap dance and the debounced host
-OS application. They run inside upstream QMK's gtest harness, not in this
+German/US punctuation handler, key overrides and the debounced host OS
+application. They run inside upstream QMK's gtest harness, not in this
 repository, because the harness and the quantum sources live there.
 
-Tested with QMK master `8252b6309752f0be6882c387e15989ba51323d8f`
-(2026-11-16) and container image `ghcr.io/qmk/qmk_cli:latest`, digest
+Tested with QMK master `8252b6309752f0be6882c387e15989ba51323d8f` and container
+image `ghcr.io/qmk/qmk_cli:latest`, digest
 `sha256:b7d7fa8fb4432b569931de5ad59098cb788f440ed61a62c5126746b71aee0f4a`.
 
 ## Fixtures
 
 | Folder                 | Covers                                                                                                                                                                                          |
 | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `helmecke_caps_word/`  | Both-Shifts activation (plain Shift and the D/K home-row mod-taps, both press/release orders), D/K taps and holds, German minus/underscore, digits, AltGr umlauts, the dedicated corner keys (`ä`/`ü`/`ß`/`ö`, with `SS` for ß in mode), AltGr+S as SS, AltGr `!`/`?`, comma and leader, consumed punctuation, Space/Shift/shortcut exits, layer-tap access, quote/GUI mod-tap, held/interrupted comma, the 5000 ms timeout. |
+| `helmecke_caps_word/`  | Both-Shifts activation (plain Shift and the D/K home-row mod-taps, both press/release orders), D/K taps and holds, German minus/underscore, digits, AltGr umlauts, the dedicated corner keys (`ä`/`ü`/`ß`/`ö`, with `SS` for ß in mode), AltGr+S as SS, AltGr `!`/`?`, plain comma (single, rapid double and triple, held, interrupted, Shift+comma, Caps Word exit on the press), consumed punctuation, Space/Shift/shortcut exits, layer-tap access, quote/GUI mod-tap, the 5000 ms timeout. |
 | `helmecke_os/`         | Debounced application of Windows/Linux/macOS/iOS detection, iOS as Apple, unknown hosts, changes between hosts, and operation without `CONSOLE_ENABLE`.                                            |
 
 The two folders are real QMK full tests: `test.mk` enables the same feature
 flags as the keymap, the shared userspace sources are compiled from
-`users/helmecke`, and `keymap.c` defines the tap dance and key override tables
-exactly as the Kyria keymap does. The tests drive matrix key events, so
-mod-tap resolution, key overrides and tap dance run through QMK's real event
-processing rather than through copied mocks.
+`users/helmecke`, and `keymap.c` defines the key override table exactly as the
+Kyria keymap does. The tests drive matrix key events, so mod-tap resolution, key
+overrides and Caps Word run through QMK's real event processing rather than
+through copied mocks.
 
 ## Run
 
@@ -30,7 +30,8 @@ processing rather than through copied mocks.
    checkout):
 
    ```bash
-   git submodule update --init --recursive lib/chibios lib/chibios-contrib lib/pico-sdk lib/googletest
+   git submodule update --init --recursive \
+       lib/chibios lib/chibios-contrib lib/pico-sdk lib/lufa lib/googletest lib/printf
    ```
 
 2. Stage this repository into the checkout:

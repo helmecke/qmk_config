@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 // The test fixture installs keycodes per test; this keymap only provides the
-// array QMK keymap introspection needs. The tap dance and key override tables
-// are part of the keymap translation unit, exactly as on the keyboard.
+// array QMK keymap introspection needs. The key override table is part of the
+// keymap translation unit, exactly as on the keyboard.
 #include QMK_KEYBOARD_H
 
 #include "../../users/helmecke/helmecke.h"

@@ -3,9 +3,6 @@
 // Configure the global tapping term (default: 200ms)
 #define TAPPING_TERM 200
 
-// Configure the global combo term (default: 50ms)
-#define COMBO_TERM 60
-
 // Mouse key speed and acceleration.
 // Delay between pressing a movement key and cursor movement (default: 10)
 #define MOUSEKEY_DELAY 5
@@ -19,5 +16,3 @@
 #define MOUSEKEY_WHEEL_DELAY 5
 // Forces the keyboard to wait for a USB connection to be established before it starts up
 // #define WAIT_FOR_USB
-#define LEADER_PER_KEY_TIMING
-#define LEADER_TIMEOUT 250

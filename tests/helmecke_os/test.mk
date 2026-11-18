@@ -18,7 +18,6 @@
 # --------------------------------------------------------------------------------
 
 OS_DETECTION_ENABLE = yes
-UNICODE_ENABLE = yes
 
 # Deliberately no CONSOLE_ENABLE: OS application must not depend on console
 # logging. The test source fails to compile if console support is enabled.
