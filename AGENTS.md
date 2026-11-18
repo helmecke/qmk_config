@@ -24,6 +24,10 @@ configuration.
   controlled by `users/helmecke/rules.mk`; shared timing settings are in
   `users/helmecke/config.h`.
 - Fixtures for the userspace and Caps Word integration: `tests/`.
+- Layer diagrams: `docs/kyria_helmecke.yaml` mirrors the keymap expansion by
+  hand. Update it with any keymap or row-macro change and redraw with
+  `bash docs/render-keymaps.sh`; `docs/README.md` carries the legend and the
+  behaviour that has no key position (encoders, key overrides, Caps Word).
 
 ## Runtime conventions
 

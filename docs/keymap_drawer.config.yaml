@@ -1,0 +1,24 @@
+# keymap-drawer styling for docs/kyria_helmecke.yaml.
+#
+# Only draw settings live here; the keymap itself is hand-written in
+# docs/kyria_helmecke.yaml. `dark_mode: auto` keeps the SVGs transparent so
+# they follow the reader's light or dark theme in the README.
+#
+# Font sizes are left at their defaults: keymap-drawer positions each legend
+# from its configured size, so overriding `font-size` in CSS misaligns legends.
+# Larger caps than the default 60x56 keep the corner (AltGr) and hold legends
+# clear of the key border.
+draw_config:
+  dark_mode: auto
+  n_columns: 1
+  key_w: 76
+  key_h: 70
+  append_colon_to_layer_header: true
+  footer_text: Kyria rev2.1 / KB2040 / helmecke
+  svg_extra_style: |
+    /* Layer and footer labels have nothing behind them; the default white
+       stroke erases thin glyph strokes on a transparent background. */
+    text.label, text.footer { stroke: none; }
+    /* The bottom-right corner carries the AltGr output; one size step down
+       keeps it reading as secondary to the hold legend at the bottom edge. */
+    text.br { font-size: 10px; }

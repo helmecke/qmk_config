@@ -92,6 +92,23 @@ variants are not needed.
 This image was flashed and exercised on the hardware; see the verification
 status below for what was and was not covered.
 
+## Keymaps
+
+![QWERTY layer](docs/keymaps/qwerty.svg)
+
+The seven layers are diagrams of `keymaps[]` in the keymap file, drawn with
+[keymap-drawer](https://github.com/caksoylar/keymap-drawer) from
+`docs/kyria_helmecke.yaml`: [all layers and the legend](docs/README.md).
+Center is the tap, the bottom legend the hold (mod-tap or layer-tap), the top
+legend Shift, the bottom-right corner an AltGr key override, `·` a transparent
+key.
+
+The YAML is a hand-maintained mirror of the keymap expansion, so it has to be
+updated together with `keymap.c` or the row macros in
+`users/helmecke/definitions/keymap_blocks.h`; `bash docs/render-keymaps.sh`
+redraws the SVGs. Encoders, key overrides and Caps Word have no key position
+and are documented in `docs/README.md` instead.
+
 ## Hardware configuration
 
 Effective settings, as resolved by the recorded build:

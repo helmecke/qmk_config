@@ -1,0 +1,59 @@
+# Kyria v2.1 keymap, hand-maintained keymap-drawer representation.
+#
+# Source of truth for the firmware is
+# keyboards/splitkb/kyria/keymaps/helmecke/keymap.c plus the row macros in
+# users/helmecke/definitions/keymap_blocks.h. This file mirrors that expansion
+# with readable legends: `qmk c2json` cannot supply them, because custom
+# keycodes, mod-taps and the German-US punctuation handling would come out as
+# raw identifiers.
+#
+# Legend conventions:
+#   center = tap        bottom = hold (mod-tap / layer-tap)
+#   top    = Shift      bottom-right = AltGr key override
+#   "·"    = transparent
+#   ⌘ ⌥ ⇧ ⌃ = GUI / Alt / Shift / Ctrl
+#
+# Regenerate the SVGs with docs/render-keymaps.sh after touching either side.
+
+layers:
+  QWERTY:
+    - ["Ä", Q, W, E, R, T, Y, {t: U, br: "Ü"}, I, {t: O, br: "Ö"}, P, "Ü"]
+    - [{t: "[", s: "{"}, {t: A, h: ⌘, br: "Ä"}, {t: S, h: ⌥, br: "ß"}, {t: D, h: ⇧}, {t: F, h: ⌃}, G, H, {t: J, h: ⌃}, {t: K, h: ⇧}, {t: L, h: ⌥}, {t: "'", s: '"', h: ⌘}, {t: "]", s: "}"}]
+    - ["ß", Z, {t: X, h: AltGr}, C, V, B, "·", "·", "·", "·", N, M, {t: ",", s: ";", br: "?"}, {t: ".", s: ":", h: AltGr, br: "!"}, {t: "/", s: "ß"}, "Ö"]
+    - [{t: Mute}, {h: ADJ}, {t: Esc, h: MOUSE}, {t: Bspc, h: SYM}, {t: Tab, h: NAV}, {t: Ent, h: MOUSE}, {t: Spc, h: NUM}, {t: Tab, h: FUN}, {h: ADJ}, {t: Play}]
+
+  NAV:
+    - ["·", "·", "·", "·", "·", "·", Home, PgDn, PgUp, End, "·", "·"]
+    - ["·", ⌘, ⌥, ⇧, ⌃, "·", "←", "↓", "↑", "→", "·", "·"]
+    - ["·", Undo, Cut, Copy, Paste, {t: Paste, h: ⇧Ins}, "·", "·", "·", "·", "·", "·", "·", "·", "·", "·"]
+    - ["·", "·", "·", "·", "·", "·", "·", "·", "·", "·"]
+
+  NUM:
+    - ["·", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "·"]
+    - ["·", ⌘, ⌥, ⇧, ⌃, "·", "·", ⌃, ⇧, ⌥, ⌘, "·"]
+    - ["·", "·", "·", "·", "·", "·", "·", "·", "·", "·", "·", "·", ",", ".", "·", "·"]
+    - ["·", "·", "·", "·", "·", "·", "·", BOOT, "·", "·"]
+
+  SYM:
+    - ["·", "`", "<", ">", "@", "%", "&", "^", "[", "]", "°", "·"]
+    - ["·", "!", "-", "+", "=", "#", "|", ":", "(", ")", "?", "·"]
+    - ["·", "€", "/", "*", "\\", "_", "·", "·", "·", "·", "~", "$", "{", "}", "§", "·"]
+    - ["·", "·", BOOT, "·", "·", "·", "·", "·", "·", "·"]
+
+  MOUSE:
+    - ["·", {t: "←", h: Whl}, {t: "↑", h: Whl}, "↑", {t: "↓", h: Whl}, {t: "→", h: Whl}, "·", "·", "·", "·", "·", "·"]
+    - ["·", "·", "←", "↓", "→", "·", "·", ⌃, ⇧, ⌥, ⌘, "·"]
+    - ["·", "·", M2, M3, M1, "·", "·", "·", "·", "·", "·", "·", "·", "·", "·", "·"]
+    - ["·", "·", "·", "·", "·", "·", "·", "·", "·", "·"]
+
+  FUN:
+    - ["·", F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, "·"]
+    - ["·", ⌘, ⌥, ⇧, ⌃, "·", "·", ⌃, ⇧, ⌥, ⌘, "·"]
+    - ["·", "·", "·", "·", "·", "·", "·", "·", "·", "·", "·", "·", "·", "·", "·", "·"]
+    - ["·", "·", "·", "·", "·", "·", "·", "·", "·", "·"]
+
+  ADJUST:
+    - ["·", "·", "·", "·", "·", "·", "·", "·", "·", "·", "·", "·"]
+    - ["·", "·", "·", "·", "·", "·", {t: UG, h: toggle}, "Sat+", "Hue+", "Val+", "Mode+", "·"]
+    - ["·", DBG, "·", "·", "·", "·", "·", "·", "·", "·", "·", "Sat-", "Hue-", "Val-", "Mode-", "·"]
+    - ["·", "·", "·", "·", "·", "·", "·", "·", "·", "·"]
