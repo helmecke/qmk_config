@@ -8,6 +8,49 @@ void matrix_scan_user(void) {
     matrix_scan_keymap();
 }
 
+// Tap-hold
+
+#ifdef CHORDAL_HOLD
+// The Kyria rev2 matrix is 8x8: rows 0-3 are the left half, rows 4-7 the right
+// half, and rows 3 and 7 hold the thumb clusters. A '*' handedness exempts a
+// key from the opposite-hands rule: thumbs are pressed by either hand, and X
+// and dot double as the AltGr keys, whose chords with the neighbouring letters
+// have to stay chords.
+char chordal_hold_handedness(keypos_t key) {
+    if (key.row == 3 || key.row == 7) {
+        return '*'; // thumb clusters
+    }
+    if ((key.row == 2 && key.col == 5) || (key.row == 6 && key.col == 5)) {
+        return '*'; // HB_X and HB_DOT, the AltGr mod-taps
+    }
+    return key.row < MATRIX_ROWS / 2 ? 'L' : 'R';
+}
+#endif // CHORDAL_HOLD
+
+#ifdef PERMISSIVE_HOLD_PER_KEY
+// Only the mod-taps resolve a nested tap as a hold before the tapping term.
+// The thumb layer-taps are left out on purpose: they are used as ordinary taps
+// in the middle of typing, and resolving them as holds would drop a following
+// key onto the layer.
+bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+        case HB_A:
+        case HB_S:
+        case HB_D:
+        case HB_F:
+        case HB_J:
+        case HB_K:
+        case HB_L:
+        case HB_QUOT:
+        case HB_X:
+        case HB_DOT:
+            return true;
+        default:
+            return false;
+    }
+}
+#endif // PERMISSIVE_HOLD_PER_KEY
+
 #ifdef OS_DETECTION_ENABLE
 // Host settings that have actually been applied to the host-facing features.
 // QMK detects the OS asynchronously and debounces the result; this value only

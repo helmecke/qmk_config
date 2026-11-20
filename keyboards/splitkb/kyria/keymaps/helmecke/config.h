@@ -32,6 +32,18 @@
 #define SPLIT_LAYER_STATE_ENABLE
 #define SPLIT_LED_STATE_ENABLE
 
+// Tap-hold: a home-row mod-tap overlapping a key of the other hand may settle
+// as a hold, and a nested tap (press and release the other key before the
+// mod-tap) settles the chord as held on that release, so capitals no longer
+// depend on the timing. Chordal Hold is what keeps same-hand rolls as taps; the
+// handedness comes from chordal_hold_handedness() in users/helmecke/helmecke.c.
+#define CHORDAL_HOLD
+// Permissive Hold is limited per key: the home-row mod-taps (plus the AltGr
+// taps X and dot) resolve early, while the thumb layer-taps keep waiting for
+// the tapping term. A quick thumb-then-key sequence therefore stays a tap of
+// the thumb (Space/Tab/Enter) instead of dropping into the layer.
+#define PERMISSIVE_HOLD_PER_KEY
+
 // Caps Word: both left and right Shift held, then released, turn it on. This
 // works with the D/K home-row Shift mod-taps (hold them past the preserved
 // 200 ms tapping term) and with explicit Shift keys on any layer. Current QMK

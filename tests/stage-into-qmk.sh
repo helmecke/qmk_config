@@ -36,6 +36,7 @@ copy_dir "${repo_root}/users/helmecke" "${qmk_root}/users/helmecke"
 copy_dir "${repo_root}/keyboards/splitkb/kyria/keymaps/helmecke" "${qmk_root}/keyboards/splitkb/kyria/keymaps/helmecke"
 copy_dir "${repo_root}/tests/helmecke_caps_word" "${qmk_root}/tests/helmecke_caps_word"
 copy_dir "${repo_root}/tests/helmecke_os" "${qmk_root}/tests/helmecke_os"
+copy_dir "${repo_root}/tests/helmecke_tap_hold" "${qmk_root}/tests/helmecke_tap_hold"
 
 cat <<EOF
 Staged into ${qmk_root}
@@ -46,4 +47,5 @@ Build the firmware:
 Run the fixtures:
   make test:helmecke_caps_word
   make test:helmecke_os
+  make test:helmecke_tap_hold
 EOF

@@ -112,5 +112,11 @@ the top-level README for the activation gesture, the timeout and the German
 character rules. While Caps Word is on, the comma ends it on the press and the
 AltGr override for `?` still applies.
 
+**Tap-hold** is core QMK behaviour too, configured per keymap. Chordal Hold turns
+same-hand overlaps of the home-row mod-taps into taps (thumbs and the AltGr keys
+`X`/`.` are exempt), and Permissive Hold resolves the mod-taps as holds when the
+chorded key is released before the tapping term. The thumb layer-taps are not
+permissive. See the Tap-hold section of the top-level README.
+
 **The OLED status screen** shows the OS logo, the board name, the highest active
 layer and the host lock state; it is described in the top-level README.

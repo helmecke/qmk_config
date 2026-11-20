@@ -56,6 +56,14 @@ triggers are processed after core Caps Word; taps and holds come from QMK. The
 comma is a plain `DE_COMM`: it ends Caps Word on the press, and AltGr+comma then
 activates the `?` override.
 
+Tap-hold edges (Kyria `config.h` defines `CHORDAL_HOLD` and
+`PERMISSIVE_HOLD_PER_KEY`; the callbacks are in `helmecke.c`): Chordal Hold keeps
+same-hand overlaps as taps, with the thumb clusters and the AltGr keys `HB_X` /
+`HB_DOT` exempt (`'*'`), and Permissive Hold is enabled only for the home-row
+mod-taps. Thumb layer-taps stay non-permissive, and the Caps Word Shift pair
+still needs both taps held past the tapping term. `tests/helmecke_tap_hold`
+pins these branches.
+
 `process_detected_host_os_user()` in `helmecke.c` applies the host OS once, and
 display, punctuation and modifier swapping read that applied value through
 `definitions/host_os.h`. There is no Unicode input mode management.
@@ -77,6 +85,7 @@ tests/stage-into-qmk.sh /path/to/worktree
 make splitkb/kyria/rev2:helmecke CONVERT_TO=kb2040 -j2
 make test:helmecke_caps_word
 make test:helmecke_os
+make test:helmecke_tap_hold
 ```
 
 A worktree keeps the pinned revision out of the checkout's working tree; run

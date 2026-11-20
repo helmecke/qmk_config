@@ -2,9 +2,10 @@
 
 These are focused regression fixtures for the parts of the configuration that
 QMK does not cover on its own: the German-aware Caps Word policy, the shared
-German/US punctuation handler, key overrides and the debounced host OS
-application. They run inside upstream QMK's gtest harness, not in this
-repository, because the harness and the quantum sources live there.
+German/US punctuation handler, key overrides, the tap-hold rules for the
+home-row mod-taps, and the debounced host OS application. They run inside
+upstream QMK's gtest harness, not in this repository, because the harness and the
+quantum sources live there.
 
 Tested with QMK master `8252b6309752f0be6882c387e15989ba51323d8f` and container
 image `ghcr.io/qmk/qmk_cli:latest`, digest
@@ -16,13 +17,14 @@ image `ghcr.io/qmk/qmk_cli:latest`, digest
 | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `helmecke_caps_word/`  | Both-Shifts activation (plain Shift and the D/K home-row mod-taps, both press/release orders), D/K taps and holds, German minus/underscore, digits, AltGr umlauts, the dedicated corner keys (`ä`/`ü`/`ß`/`ö`, with `SS` for ß in mode), AltGr+S as SS, AltGr `!`/`?`, plain comma (single, rapid double and triple, held, interrupted, Shift+comma, Caps Word exit on the press), consumed punctuation, Space/Shift/shortcut exits, layer-tap access, quote/GUI mod-tap, the 5000 ms timeout. |
 | `helmecke_os/`         | Debounced application of Windows/Linux/macOS/iOS detection, iOS as Apple, unknown hosts, changes between hosts, and operation without `CONSOLE_ENABLE`.                                            |
+| `helmecke_tap_hold/`   | Chordal Hold handedness (left/right rows, thumb cluster and AltGr slot exempt), a nested capital, the roll counter-case, same-hand protection, the nested Ctrl+Shift+V chord, AltGr+`a` through the AltGr exemption, and the thumb layer-tap with and without Permissive Hold. |
 
-The two folders are real QMK full tests: `test.mk` enables the same feature
+The three folders are real QMK full tests: `test.mk` enables the same feature
 flags as the keymap, the shared userspace sources are compiled from
 `users/helmecke`, and `keymap.c` defines the key override table exactly as the
-Kyria keymap does. The tests drive matrix key events, so mod-tap resolution, key
-overrides and Caps Word run through QMK's real event processing rather than
-through copied mocks.
+Kyria keymap does. The tests drive matrix key events, so mod-tap resolution,
+Permissive/Chordal Hold, key overrides and Caps Word run through QMK's real event
+processing rather than through copied mocks.
 
 ## Run
 
@@ -46,6 +48,7 @@ through copied mocks.
    cd /path/to/qmk_firmware
    make test:helmecke_caps_word
    make test:helmecke_os
+   make test:helmecke_tap_hold
    ```
 
    or in the QMK container on Windows, from the checkout:
@@ -70,6 +73,14 @@ through copied mocks.
 - `helmecke_os` is built without `CONSOLE_ENABLE` on purpose; the test source
   fails to compile if console support is added, so OS application cannot
   silently depend on logging.
+- `helmecke_tap_hold` runs on the harness's 4×10 matrix and maps the Kyria
+  handedness rule onto it: rows 0-1 are the left hand, row 2 the right hand and
+  row 3 the thumb cluster. The positions are chosen to reach the branches of
+  `chordal_hold_handedness()`, not to reproduce the board geometry; the AltGr
+  slot is `(2,5)`, the same matrix position as `HB_X` on the Kyria. The fixture
+  defines `chordal_hold_layout` because the test platform has no generated
+  `keyboard.c` for the weak default; the rule in effect is the userspace
+  override.
 - Hardware behaviour (both USB orientations, Cirque, OLED, underglow, host
   input methods) is not covered by these fixtures. See the checklist in the
   repository `README.md`.

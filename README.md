@@ -160,7 +160,10 @@ together and release one of them. With the home-row Shift mod-taps hold `D` and
 keys on other layers and one-shot Shift work the same way (plain and mod-tap
 Shift pairs activate in either release order, one-shot shifts in QMK's tested
 order, left first). Ordinary `D`/`K` taps still type letters, and an individual
-hold still acts as Shift.
+hold still acts as Shift. Permissive Hold does not shorten the mod-tap variant:
+both mod-taps still have to outlast the tapping term, because Caps Word only sees
+the gesture once both Shifts are registered at the same time, and releasing
+either of them earlier resolves it as a tap.
 
 While active:
 
@@ -190,6 +193,41 @@ End or waiting for a tapping term. An ordinary comma ends Caps Word on the press
 itself; AltGr+`,` afterwards activates the `?` key override, which QMK processes
 after Caps Word.
 
+## Tap-hold
+
+The home-row mod-taps (`A` `S` `D` `F` on the left, `J` `K` `L` `'` on the
+right) and the AltGr mod-taps on `X` and `.` use QMK's default 200 ms tapping
+term together with two decision rules. The keymap `config.h` only carries the
+two defines; the callbacks are in `users/helmecke/helmecke.c`.
+
+- **Chordal Hold** (`CHORDAL_HOLD`): a mod-tap may settle as a hold only when
+  the other key of the chord is on the other hand. A same-hand overlap settles
+  the mod-tap as a tap, so rolling two letters of one hand keeps typing letters
+  and does not produce a stray modifier. This is also why `D`+`A` is always
+  `da`: capitals need the Shift of the opposite hand. The handedness comes from
+  `chordal_hold_handedness()`: the Kyria rev2 matrix rows 0-3 are the left half
+  and rows 4-7 the right half. The thumb clusters and the two AltGr keys `X` and
+  `.` are exempt (`'*'`), so their chords are always allowed.
+- **Permissive Hold** (`PERMISSIVE_HOLD_PER_KEY`): when the other key of the
+  chord is pressed and released again before the tapping term, the mod-tap
+  settles as a hold on that release. A capital therefore does not depend on the
+  timing: press the mod-tap, tap the letter, release the letter, release the
+  mod-tap.
+
+Permissive Hold is enabled per key, for the home-row mod-taps and the AltGr taps
+only. The thumb layer-taps keep QMK's default behaviour: a quick
+thumb-then-key sequence within the tapping term is a tap of the thumb
+(Space/Tab/Enter) plus the key on the base layer, while holding the thumb past
+the tapping term opens the layer.
+
+Known boundaries:
+
+- The roll case stays a tap for both keys. Releasing the mod-tap before the
+  other key (Shift then letter, Shift released first) types two plain letters;
+  the capital form needs the other key released before the mod-tap.
+- Because `X` is exempt from the hands rule, a very fast `x` followed by `a` can
+  be read as AltGr+`a` (`ä`). The same applies to `.` and the `!` override.
+
 ## Host OS detection
 
 QMK detects the host from USB fingerprinting and reports it after a debounce.
@@ -217,13 +255,15 @@ upstream QMK:
 ```bash
 make test:helmecke_caps_word
 make test:helmecke_os
+make test:helmecke_tap_hold
 ```
 
 ## Verification status
 
-Two dated runs are recorded. The earlier one belongs to the source before the
-cleanup and identifies the rollback image; the later one records the cleanup.
-Old counts and hashes are history, not evidence for the current image.
+Three dated runs are recorded. The earliest belongs to the source before the
+cleanup and identifies the rollback image; the second records the cleanup; the
+third records the tap-hold change. Old counts and hashes are history, not
+evidence for the current image.
 
 ### Pre-cleanup run (2026-11-17) — rollback identity
 
@@ -281,6 +321,26 @@ console-disabled variant has
 kept outside this repository next to the rollback artifact. Rebuilding the same
 configuration reproduces each image; the two variants differ because console
 support changes the compiled output.
+
+### Tap-hold run (2026-11-20)
+
+| Check | Result |
+| ----- | ------ |
+| Full-feature KB2040 build | Passed, clean build, no compiler warnings |
+| Console-disabled KB2040 build | Passed, clean build, no compiler warnings |
+| Caps Word / punctuation / key override fixtures | Passed (18 tests) |
+| Host OS application fixtures, console-disabled | Passed (5 tests) |
+| Tap-hold fixtures | Passed (8 tests: handedness, nested capital, roll counter-case, same-hand tap, Ctrl+Shift+V, AltGr chord, thumb chord, non-permissive thumb) |
+| Flash, both halves, same firmware | Passed |
+| Tap-hold on hardware | Passed: capital with `K` held and `A` released first, roll counter-check (`ku`), `K`+`J`+`V` as Ctrl+Shift+V, AltGr `ä`/`ß` via `HB_X` with a short chord, held `TH_SPC` plus `6` on `_NUM`, Caps Word via `D`+`K` |
+| Not re-checked | Underglow, the Cirque, the USB-C dock, the 60 s OLED sleep/wake, the opposite USB orientation and macOS/Linux hosts; the earlier runs stand for them because this change cannot affect them |
+
+The full-feature image has SHA-256
+`2e5763a26d6a346d3c474b84102432c95900a668932746234b2ae91e70cf64df`; the
+console-disabled variant has
+`8a7a6b9a6519b935fb86a71fb6a58e848b377a9e2f533b3abe7dce3dff677a68`. Both are
+kept outside this repository as `kyria-kb2040-helmecke-tap-hold.uf2` and
+`kyria-kb2040-helmecke-tap-hold-console-disabled.uf2`.
 
 ### OLED sync fix found during hardware validation
 
