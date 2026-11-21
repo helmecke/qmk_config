@@ -107,8 +107,10 @@ the commands inside it, in the QMK container on Windows.
   layer, the transparent former debug slot on `_ADJUST` typing `b`, multi-tap
   and hold commas, AltGr `?`/`!`, and the Caps Word character checks
   (`HELLO_WORLD123`, `ÄÖÜ`, `SS`, comma exit, 5 s timeout). Underglow, the
-  Cirque, the USB-C dock, the 60 s OLED sleep/wake and macOS/Linux hosts are
-  covered by the 2026-11-17 run only, because this change cannot affect them.
+  USB-C dock, the 60 s OLED sleep/wake and macOS/Linux hosts are covered by the
+  2026-11-17 run only, because this change cannot affect them. The Cirque was
+  not part of either run; its hardware pass is dated 2026-11-20 (see the gap
+  list below).
 
 ## Known integration gaps
 
@@ -118,9 +120,19 @@ relying on them or changing behavior:
 - Only the left half has an OLED, and it renders the status screen in both USB
   orientations. Layer and host lock state are synced for that; Caps Word state
   is not, so `CapsWord: on` shows only while the left half is the USB half.
-- The Cirque is present but currently disconnected (missing connector and ribbon
-  cable), so pointing device behaviour is unvalidated.
-- macOS/Linux host behaviour and the USB-C dock are unverified.
+- The Cirque is connected and validated on hardware (2026-11-20): tracking,
+  tap-to-click (left click), circular scroll, split forwarding with either half
+  as the USB half, and the `_MOUSE` buttons and drag on the pad. It is mounted
+  at the inner top corner of the right half, immediately left of `Y`, not in a
+  thumb cluster, so a resting palm or thumb cannot reach it and palm rejection
+  has no failure mode to test.
+- `CIRQUE_PINNACLE_SECONDARY_TAP_ENABLE` is inert in absolute mode, which this
+  configuration uses: QMK implements the secondary tap only in relative mode.
+  There is no right click on the pad, and the tap gesture cannot hold a button,
+  so right click and drag come from `_MOUSE`. The tap test is time-only, so a
+  fast flick also clicks.
+- USB-C dock operation has been tested by the user and reported working without
+  issues. macOS/Linux host behaviour remains unverified.
 - OS detection is a USB fingerprint heuristic. There is no manual OS selector,
   and QMK keeps its detection state across a USB reconnect at the pinned
   revision, so a host change may need a keyboard reset.

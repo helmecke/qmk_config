@@ -121,13 +121,18 @@ Effective settings, as resolved by the recorded build:
 | OLED and Cirque | Share the I2C bus; no repo-level RP2040 I2C overrides | Kyria keymap config/rules, board defaults |
 | RGB underglow | `WS2812` on Pro Micro `D3` → `GP0`, vendor driver, 20 LEDs split 10/10 | `keyboard.json`, converter default |
 | OLED | 128x64 SSD1306, rotation 180°, status screen on the only display; no OLED on/off sync; layer and lock state synced to the peripheral half | `rev2/config.h`, keymap config, keymap code |
-| Cirque | 40 mm Pinnacle on I2C, right side, tap and secondary tap, gesture scroll, curved overlay | Kyria keymap `config.h`/`rules.mk` |
+| Cirque | 40 mm Pinnacle on I2C, mounted at the inner top corner of the right half immediately left of `Y`; absolute mode: tap is a left click, `POINTING_DEVICE_GESTURES_SCROLL_ENABLE` is circular scroll, curved overlay | Kyria keymap `config.h`/`rules.mk` |
 | USB side | Either half may be USB; `SPLIT_USB_DETECT`, `SPLIT_USB_TIMEOUT 4000`, `NO_USB_STARTUP_CHECK` | Kyria keymap `config.h` |
 
 The Cirque reports locally when the right half is the USB half and forwards
-movement, buttons and scroll when the left half is central. Left-half USB
-operation is confirmed by typing and display checks; the Cirque itself could not
-be exercised in this session because its connector and ribbon cable are missing.
+movement, buttons and scroll when the left half is central. Both paths were
+exercised on hardware after the FFC cable arrived (see the 2026-11-20 run
+below).
+
+`CIRQUE_PINNACLE_SECONDARY_TAP_ENABLE` is set but has no effect: QMK implements
+the secondary tap only in relative mode, and this configuration uses absolute
+mode. The pad therefore has no right click, and the tap gesture cannot hold a
+button, so right click and drag come from `_MOUSE`.
 
 ### OLED
 
@@ -260,10 +265,15 @@ make test:helmecke_tap_hold
 
 ## Verification status
 
-Three dated runs are recorded. The earliest belongs to the source before the
+Four dated runs are recorded. The earliest belongs to the source before the
 cleanup and identifies the rollback image; the second records the cleanup; the
-third records the tap-hold change. Old counts and hashes are history, not
-evidence for the current image.
+third records the tap-hold change; the fourth exercises the Cirque once its cable
+was in place. Old counts and hashes are history, not evidence for the current
+image.
+
+USB-C dock operation has also been tested by the user and reported working
+without issues. The older run entries below retain their status at the time.
+macOS/Linux host behaviour remains unverified.
 
 ### Pre-cleanup run (2026-11-17) — rollback identity
 
@@ -307,12 +317,13 @@ fully validated behaviour.
 | Plain comma | Passed: single, double and triple presses type 1/2/3 commas, a hold types one comma with no End, and the following letter is not swallowed |
 | AltGr punctuation | Passed: AltGr+`,` types `?` and AltGr+`.` types `!` |
 | Caps Word | Passed: `HELLO_WORLD123`, `ÄÖÜ`, `SS`, comma exits the word on the press, quote/GUI work, the 5 s timeout ends it |
-| Not re-checked | Underglow wiring, the Cirque, the USB-C dock, the 60 s OLED sleep/wake and the opposite USB orientation; the 2026-11-17 run stands for them because this change cannot affect them |
+| Not re-checked | Underglow wiring, the USB-C dock, the 60 s OLED sleep/wake and the opposite USB orientation; the 2026-11-17 run stands for them because this change cannot affect them. The Cirque was not connected yet; it is covered by its own 2026-11-20 run |
 | macOS/Linux hosts | Not tested (no hosts available) |
 
 Hardware checks were run on both halves with the same image, as required by the
-renumbered layers. The Cirque remains untestable while its connector and ribbon
-cable are missing; pointing behaviour is therefore still unvalidated.
+renumbered layers. The Cirque could not be exercised at that point because its
+connector and ribbon cable were still missing; it was validated later in the
+2026-11-20 run below.
 
 The full-feature image has SHA-256
 `780ea86f953153504d3aac16944dacf72ce38697b04d608d4a390a97a091a344`; the
@@ -333,7 +344,7 @@ support changes the compiled output.
 | Tap-hold fixtures | Passed (8 tests: handedness, nested capital, roll counter-case, same-hand tap, Ctrl+Shift+V, AltGr chord, thumb chord, non-permissive thumb) |
 | Flash, both halves, same firmware | Passed |
 | Tap-hold on hardware | Passed: capital with `K` held and `A` released first, roll counter-check (`ku`), `K`+`J`+`V` as Ctrl+Shift+V, AltGr `ä`/`ß` via `HB_X` with a short chord, held `TH_SPC` plus `6` on `_NUM`, Caps Word via `D`+`K` |
-| Not re-checked | Underglow, the Cirque, the USB-C dock, the 60 s OLED sleep/wake, the opposite USB orientation and macOS/Linux hosts; the earlier runs stand for them because this change cannot affect them |
+| Not re-checked | Underglow, the USB-C dock, the 60 s OLED sleep/wake, the opposite USB orientation and macOS/Linux hosts; the earlier runs stand for them because this change cannot affect them. The Cirque was exercised on this image in the run below |
 
 The full-feature image has SHA-256
 `2e5763a26d6a346d3c474b84102432c95900a668932746234b2ae91e70cf64df`; the
@@ -341,6 +352,27 @@ console-disabled variant has
 `8a7a6b9a6519b935fb86a71fb6a58e848b377a9e2f533b3abe7dce3dff677a68`. Both are
 kept outside this repository as `kyria-kb2040-helmecke-tap-hold.uf2` and
 `kyria-kb2040-helmecke-tap-hold-console-disabled.uf2`.
+
+### Cirque run (2026-11-20)
+
+The FFC cable arrived, so the trackpad could be exercised for the first time.
+No firmware was rebuilt for the check; it ran on the current tap-hold image.
+
+| Check | Result |
+| ----- | ------ |
+| Detection and tracking | Passed: the cursor follows the finger and does not jump on a new contact after a lift |
+| Axes and edges | Passed: right and up map correctly, neither swapped nor mirrored; the whole surface is reachable |
+| Tap | Passed: a tap under the 200 ms term is a left click, two taps a double click, a longer hold does not click |
+| Circular scroll | Passed: an outer-ring drag scrolls, and the cursor stays put while it does |
+| Split forwarding | Passed: with the USB cable in the left half, motion, clicks and scroll arrive unchanged, typing on the left works while the right half is used, and the left display keeps its OS logo and layer line, `Mouse` included |
+| `_MOUSE` buttons | Passed: `MS_BTN1`/`2`/`3` and movement behave as mapped |
+| Drag | Passed: `MS_BTN1` held drags on the pad, also when the finger is already down before the button |
+| Taps while typing | No stray clicks observed; the time-only tap was seen on a fast flick and left as is |
+| Palm and thumb rejection | Not applicable: the pad sits at the inner top corner of the right half, immediately left of `Y`, so a resting palm or thumb cannot reach it; it is reached with the right index finger. |
+
+The mounting position is the reason the pad needs no palm rejection: it is not
+in a thumb cluster, and the only way to brush it by accident is the index finger
+crossing it on the way to the top row.
 
 ### OLED sync fix found during hardware validation
 

@@ -104,6 +104,12 @@ layer:
 **Encoders** (`encoder_map` in `keymap.c`): one encoder per half, identical on
 all seven layers. The two entries are volume down/up and previous/next track.
 
+**The Cirque trackpad** in the right half has no key position either. In this
+absolute-mode configuration a tap under the 200 ms term is a left click and an
+outer-ring drag is circular scroll; the pad has no right click and no gesture
+that holds a button, so those come from the `_MOUSE` layer. Mounting and the
+hardware checks are described in the top-level README.
+
 **The four unlabelled caps** next to the split are the extra key positions of
 the rev2 matrix. The keymap leaves them transparent, so they type nothing.
 
